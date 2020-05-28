@@ -1,0 +1,5 @@
+ofxFlowTools
+ofxGui
+ofxMonitorInfo
+ofxOsc
+ofxXmlSettings
