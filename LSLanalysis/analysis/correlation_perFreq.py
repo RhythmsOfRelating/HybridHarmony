@@ -3,14 +3,16 @@ import json
 import numpy as np
 
 from os import getpid
+import os
 import math
 from itertools import islice
 from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_float32
 from scipy.signal import hilbert
 from scipy.signal import butter, lfilter
 
-PATH_TOPO = './analysis/topo.json'
-PATH_SELECT = './analysis/select.json'
+current = os.path.dirname(__file__)
+PATH_TOPO = os.path.join(current, 'topo.json')
+PATH_SELECT = os.path.join(current, 'select.json')
 
 STREAM_COUNT = None
 SAMPLE_RATE = None
@@ -229,6 +231,7 @@ class Correlation:
                       for key, val in select.items()}
         else:
             choose = {key:np.arange(0, self.channel_count, 1) for key in BANDS.keys()}  # other device types - use all channels
+
         return choose
 
 
