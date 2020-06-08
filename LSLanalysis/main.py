@@ -24,7 +24,6 @@ def main():
 
   discovery.start()
   analysis.start()
-  analysis._update()
   ui.start()
 
 if '__main__' == __name__:
