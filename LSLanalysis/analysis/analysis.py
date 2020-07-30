@@ -5,9 +5,12 @@ from .buffer import Buffer
 from .correlation_perFreq import Correlation
 
 class Analysis:
-  def __init__(self, discovery):
+  def __init__(self, discovery, mode, chn_type, corr_params):
     self.logger = logging.getLogger(__name__)
     self.discovery = discovery
+    self.mode = mode
+    self.chn_type = chn_type
+    self.corr_params = corr_params
     self.buffer = Buffer(discovery)
     self.thread = None
     self.running = False
@@ -59,6 +62,9 @@ class Analysis:
     Correlation(
       sample_rate=sample_rate,
       channel_count=channel_count,
-      buffers=self.buffer.buffers_by_uid
+      buffers=self.buffer.buffers_by_uid,
+      mode = self.mode,
+      chn_type = self.chn_type,
+      corr_params = self.corr_params
     ).run()
 

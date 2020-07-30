@@ -13,8 +13,8 @@ from astropy.stats import circmean
 from itertools import product
 
 current = os.path.dirname(__file__)
-PATH_TOPO = os.path.join(current, 'topo.json')
-PATH_SELECT = os.path.join(current, 'select.json')
+# PATH_TOPO = os.path.join(current, 'topo.json')
+# PATH_SELECT = os.path.join(current, 'select.json')
 
 STREAM_COUNT = None
 SAMPLE_RATE = None
@@ -28,24 +28,20 @@ HANN = None
 ORDER = 5
 OUTLET = None
 OUTLET_POWER = None
-BANDS = {
-    'delta': (1, 4),
-    'theta': (4, 8),
-    'alpha': (8, 14),
-    'beta':  (14, 20)
-}
 CHOOSE_CHANNELS = None
 
 
 class Correlation:
 
-    def __init__(self, sample_rate, channel_count, buffers):
+    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params):
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
         self.sample_size = int(self.sample_rate * WINDOW)
         self.channel_count = channel_count
         self.buffers = buffers
-        
+        self.freqParams, self.chnParams, self.weightParams = corr_params
+        self.mode = mode
+        self.chn_type = chn_type
         self._setup()
     
     def _changed_since_last_run(self):
@@ -76,11 +72,11 @@ class Correlation:
         CONNECTIONS = self._setup_num_connections()
         OUTLET = self._setup_outlet()
         OUTLET_POWER = self._setup_outlet_power()
-        CHOOSE_CHANNELS = self._setup_electrodes()
+        CHOOSE_CHANNELS = self.chnParams
 
     def _setup_outlet(self):
 
-        sample_size = CONNECTIONS * len(BANDS)
+        sample_size = CONNECTIONS * len(self.freqParams)
         
         if sample_size == 0:
             return
@@ -104,7 +100,7 @@ class Correlation:
 
     # phoebe edit
     def _setup_outlet_power(self):
-        sample_size =  STREAM_COUNT * CHANNEL_COUNT * len(BANDS)
+        sample_size =  STREAM_COUNT * CHANNEL_COUNT * len(self.freqParams)
         if sample_size == 0:
             return
         info = StreamInfo('Powervals', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "Pvals-{}".format(getpid()))
@@ -116,7 +112,7 @@ class Correlation:
         min_band = 0.0 + 1.0e-10
         max_band = 1.0 - 1.0e-10
         coefficients = []
-        for band in BANDS.values():
+        for band in self.freqParams.values():
             low_band = max(min_band, min(max_band, band[0] / nyq))
             high_band = max(min_band, min(max_band, band[1] / nyq))
             low, high = butter(ORDER, [low_band, high_band], btype='band')
@@ -145,7 +141,7 @@ class Correlation:
             self._apply_window_weights(analysis_window)
 
             analytic_matrix = self._calculate_all(analysis_window)
-            rvalues = self._calculate_rvalues(analytic_matrix)
+            rvalues = self._calculate_rvalues(analytic_matrix, self.mode)
             power_values = self._calculate_power(analytic_matrix)
             
             if OUTLET:
@@ -165,34 +161,6 @@ class Correlation:
 
     def _calculate_power(self, analytic_matrix):
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
-    
-    # read json files and choose electrodes for each freq band, saved as a dict
-    def _setup_electrodes(self):
-        device = None
-
-        if self.channel_count == 32:
-            device = 'liveamp32'
-        elif self.channel_count == 16:
-            device = 'liveamp16'
-        elif self.channel_count == 14:
-            device = 'epoc+'
-        elif self.channel_count == 4:
-            device ='muse'
-        else:
-            self.logger.warning('device type not recognized, channel count is ' + str(self.channel_count) + '\n' +
-                                'Using average of all channels.')
-        if device:
-            with open(PATH_TOPO, 'r') as f:
-                topo = json.load(f)[device]
-            with open(PATH_SELECT, 'r') as f:
-                select = json.load(f)[device]
-            choose = {key: [topo[electrode]-1 for electrode in val]
-                      for key, val in select.items()}
-        else:
-            choose = {key:np.arange(0, self.channel_count, 1) for key in BANDS.keys()}  # other device types - use all channels
-
-        return choose
-
 
     def _find_trailing_timestamp(self):
         trailing_timestamp = local_clock()
@@ -268,29 +236,29 @@ class Correlation:
             dphi = self._multiply_conjugate(c, s, transpose_axes=transpose_axes)
             con = abs(dphi) / n_samp
 
-        elif mode.lower() == 'envelope_corr':
+        elif mode.lower() == 'envelope correlation':
             env = np.abs(complex_signal)
             mu_env = np.mean(env, axis=2).reshape(n_freq, 2 * n_ch, 1)
             env = env - mu_env
             con = np.einsum('ilm,imk->ilk', env, env.transpose(transpose_axes)) / \
                   np.sqrt(np.einsum('il,ik->ilk', np.sum(env ** 2, axis=2), np.sum(env ** 2, axis=2)))
 
-        elif mode.lower() == 'pow_corr':
+        elif mode.lower() == 'power correlation':
             env = np.abs(complex_signal) ** 2
             mu_env = np.mean(env, axis=3).reshape(n_freq, 2 * n_ch, 1)
             env = env - mu_env
             con = np.einsum('ilm,imk->ilk', env, env.transpose(transpose_axes)) / \
                   np.sqrt(np.einsum('il,ik->ilk', np.sum(env ** 2, axis=2), np.sum(env ** 2, axis=2)))
 
-        elif mode.lower() == 'coh':
+        elif mode.lower() == 'coherence':
             c = np.real(complex_signal)
             s = np.imag(complex_signal)
             amp = np.abs(complex_signal) ** 2
             dphi = self._multiply_conjugate(c, s, transpose_axes=transpose_axes)
-            con = np.abs(dphi) / np.sqrt(np.einsum('nil,nik->nilk', np.nansum(amp, axis=3),
-                                                   np.nansum(amp, axis=3)))
+            con = np.abs(dphi) / np.sqrt(np.einsum('il,ik->ilk', np.nansum(amp, axis=2),
+                                                            np.nansum(amp, axis=2)))
 
-        elif mode.lower() == 'imaginary_coh':
+        elif mode.lower() == 'imaginary coherence':
             c = np.real(complex_signal)
             s = np.imag(complex_signal)
             amp = np.abs(complex_signal) ** 2
@@ -321,8 +289,16 @@ class Correlation:
             con = self.compute_sync(analytic_matrix[:, pair, :, :], mode)
             # the connectivity matrix for the current pair. shape is (n_freq, n_ch, n_ch)
             con = con[:, 0:self.channel_count, self.channel_count:]
-            # TODO: average certain channels based on frequency bands. Question: how do we organize channel info?
-            rvals.append(np.nanmean(con, axis=(1, 2)))
+            result = []
+            for i, freq in enumerate(self.freqParams.keys()):
+                if 'all-to-all' in self.chn_type:  # all to all correlation
+                    result.append(np.nanmean(con[i, self.chnParams[freq]][:, self.chnParams[freq]], axis=(0,1)))
+                else:  # channel to channel correlation
+                    result.append(np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[:, self.chnParams[freq]], axis=0))
+            # adjust result according to weight parameters
+            weights = list(self.weightParams.values())
+            result = [r*weight/sum(weights) for r, weight in zip(result, weights)]
+            rvals.append(result)
 
         return np.array(rvals)  # (n_connections, n_freq)
 

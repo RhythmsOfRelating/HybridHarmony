@@ -10,6 +10,7 @@ args = parser.parse_args()
 from acquisition import Discovery
 from analysis import Analysis
 from ui import Application
+from gui import gui
 
 def main():
   logging.config.fileConfig('logging.conf')
@@ -31,3 +32,16 @@ if '__main__' == __name__:
     main()
   except KeyboardInterrupt:
     pass
+
+
+############
+
+if __name__ == "__main__":
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
