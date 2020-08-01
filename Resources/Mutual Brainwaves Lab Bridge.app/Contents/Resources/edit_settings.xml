@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<edit>
+	<average_FPS>30</average_FPS>
+	<scene>
+		<fast_mode__F_>0</fast_mode__F_>
+		<start___next_scene__S_>0</start___next_scene__S_>
+		<continous_mode__C_>0</continous_mode__C_>
+		<reset__R_>0</reset__R_>
+		<duration>
+			<intro_duration__m_>2</intro_duration__m_>
+			<correlation_duration__m_>1</correlation_duration__m_>
+			<score_duration__m_>0</score_duration__m_>
+		</duration>
+	</scene>
+	<correlation_tweak>
+		<R_in_window__samples_>10</R_in_window__samples_>
+		<R_half_time__seconds_>40</R_half_time__seconds_>
+		<R_out_window__samples_>30</R_out_window__samples_>
+		<tweaker>
+			<in_window>10</in_window>
+			<out_window>10</out_window>
+			<toggle_auto_range>0</toggle_auto_range>
+			<auto_range_half_time>10</auto_range_half_time>
+			<power>1</power>
+			<output>0.0899415</output>
+			<info>
+				<input>0.4</input>
+				<smooth>0.4</smooth>
+				<normalization_range>0.3, 0.5</normalization_range>
+				<normalized>0.4</normalized>
+				<output>0.4</output>
+			</info>
+			<input>0.18469</input>
+			<input_smooth_window>10</input_smooth_window>
+			<smoothed_input>0.214449</smoothed_input>
+			<range>
+				<toggle_auto_range>1</toggle_auto_range>
+				<auto_range_half_time>60</auto_range_half_time>
+				<normalization_range>0.214449, 0.448448</normalization_range>
+				<normalized_input>6.36805e-08</normalized_input>
+			</range>
+			<output_smooth_window>10</output_smooth_window>
+			<output_power>1</output_power>
+		</tweaker>
+	</correlation_tweak>
+</edit>

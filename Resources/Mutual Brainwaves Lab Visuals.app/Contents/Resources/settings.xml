@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<settings>
+	<show_gui__G_>1</show_gui__G_>
+	<full_screen__F_>0</full_screen__F_>
+	<select_screen>0</select_screen>
+	<reset__R_>0</reset__R_>
+	<visuals>
+		<scale>0.681633</scale>
+		<start>-0.00612245</start>
+		<end>0.513265</end>
+		<flip1>0</flip1>
+		<flip2>0</flip2>
+		<font_Size>160</font_Size>
+		<font_Y>0.4</font_Y>
+	</visuals>
+</settings>

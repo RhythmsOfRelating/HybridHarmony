@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<edit>
+	<average_FPS>30</average_FPS>
+	<scene>
+		<fast_mode__F_>0</fast_mode__F_>
+		<start___next_scene__S_>0</start___next_scene__S_>
+		<continous_mode__C_>0</continous_mode__C_>
+		<duration>
+			<intro_duration__m_>0.2</intro_duration__m_>
+			<correlation_duration__m_>5</correlation_duration__m_>
+			<score_duration__m_>0.4</score_duration__m_>
+		</duration>
+		<reset__R_>0</reset__R_>
+	</scene>
+	<correlation_tweak>
+		<R_in_window__samples_>10</R_in_window__samples_>
+		<R_half_time__seconds_>40</R_half_time__seconds_>
+		<R_out_window__samples_>30</R_out_window__samples_>
+	</correlation_tweak>
+</edit>
