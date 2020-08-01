@@ -20,16 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cd79da94-b3c9-4185-a6ae-b372bea5b54e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/harmonic-dissonance.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/harmonic-dissonance.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/gui/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/gui/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/gui/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/gui/gui.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/debugging.py" beforeDir="false" afterPath="$PROJECT_DIR$/debugging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Resources/.gitkeep" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -216,6 +208,10 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="388" y="206" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1596137161784">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="388" y="206" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1707.920@0.0.1707.920" timestamp="1596137161784" />
     <state x="1238" y="412" key="FileChooserDialogImpl" timestamp="1591643929150">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
@@ -252,6 +248,10 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1362" height="166" key="GridCell.Tab.1.right/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
+    <state x="250" y="192" key="Vcs.Push.Dialog.v2" timestamp="1596137117201">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="250" y="192" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1596137117201" />
     <state x="1434" y="36" width="1033" height="766" key="dock-window-1" timestamp="1591397549211">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
