@@ -86,16 +86,15 @@ class Correlation:
         
         mappings = info.desc().append_child("mappings")
         buffer_keys = list(self.buffers.keys())
-        for buffer_idx in range(len(buffer_keys) - 1):
-            compare_buffers = len(buffer_keys) - buffer_idx - 1
-            compare_buffer_idx = 1
-            while compare_buffer_idx <= compare_buffers:
-                mappings.append_child("mapping") \
-                    .append_child_value("from", buffer_keys[buffer_idx]) \
-                    .append_child_value("to", buffer_keys[buffer_idx + compare_buffer_idx])
-                
-                compare_buffer_idx += 1
-        
+        pair_index = [a for a in
+                      list(product(np.arange(0, len(buffer_keys)), np.arange(0, len(buffer_keys))))
+                      if a[0] < a[1]]
+
+        for pair in pair_index:
+            mappings.append_child("mapping") \
+                .append_child_value("from", buffer_keys[pair[0]]) \
+                .append_child_value("to", buffer_keys[pair[1]])
+
         return StreamOutlet(info)
 
     # phoebe edit
@@ -298,8 +297,8 @@ class Correlation:
             # adjust result according to weight parameters
             weights = list(self.weightParams.values())
             result = [r*weight/sum(weights) for r, weight in zip(result, weights)]
-            rvals.append(result)
+            rvals.extend(result)
 
-        return np.array(rvals)  # (n_connections, n_freq)
+        return rvals  # a list of length n_connections * n_freq
 
 

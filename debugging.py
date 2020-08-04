@@ -52,3 +52,41 @@ while True:
     # interested in it)
     sample,timestamp = inlet.pull_sample()
     print("got %s at time %s" % (sample[0], timestamp))
+
+
+
+### testing OUTLET
+import logging
+import json
+import numpy as np
+
+from os import getpid
+import os
+import math
+from itertools import islice
+from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_float32
+from scipy.signal import hilbert
+from scipy.signal import butter, lfilter
+from astropy.stats import circmean
+from itertools import product
+
+sample_size = 3*3
+
+info = StreamInfo('RValues', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "RValues-{}".format(getpid()))
+info.desc().append_child_value("correlation", "R")
+
+mappings = info.desc().append_child("mappings")
+buffer_keys = ['orange','blue','black']
+pair_index = [a for a in
+              list(product(np.arange(0,len(buffer_keys)), np.arange(0, len(buffer_keys))))
+              if a[0] < a[1]]
+
+for pair in pair_index:
+    mappings.append_child("mapping") \
+        .append_child_value("from", buffer_keys[pair[0]]) \
+        .append_child_value("to", buffer_keys[pair[1]])
+    print(buffer_keys[pair[0]],buffer_keys[pair[1]])
+
+outlet = StreamOutlet(info)
+rvalues = [1,2,2,1,2,3,1,2,3]
+outlet.push_sample(rvalues, timestamp=111111)
