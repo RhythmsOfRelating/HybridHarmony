@@ -293,7 +293,7 @@ class Correlation:
                 if 'all-to-all' in self.chn_type:  # all to all correlation
                     result.append(np.nanmean(con[i, self.chnParams[freq]][:, self.chnParams[freq]], axis=(0,1)))
                 else:  # channel to channel correlation
-                    result.append(np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[:, self.chnParams[freq]], axis=0))
+                    result.append(np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]]))
             # adjust result according to weight parameters
             weights = list(self.weightParams.values())
             result = [r*weight/sum(weights) for r, weight in zip(result, weights)]
