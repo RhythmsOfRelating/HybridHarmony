@@ -21,60 +21,11 @@
   <component name="ChangeListManager">
     <list default="true" id="cd79da94-b3c9-4185-a6ae-b372bea5b54e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileEditorManager">
-    <leaf>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/PycharmProjects/untitled/venv/pylsl.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="18" column="12" lean-forward="true" selection-start-line="18" selection-start-column="12" selection-end-line="18" selection-end-column="12" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="284">
-              <caret line="300" column="23" selection-start-line="300" selection-start-column="23" selection-end-line="300" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/LSLanalysis/analysis/correlation.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-969">
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/debugging.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="311">
-              <caret line="39" selection-start-line="39" selection-end-line="39" />
-              <folding>
-                <element signature="e#0#10#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -86,52 +37,8 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$USER_HOME$/PycharmProjects/untitled/venv/pylsl.py" />
-        <option value="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="1">
-    <option name="x" value="56" />
-    <option name="y" value="23" />
-    <option name="width" value="1086" />
-    <option name="height" value="822" />
-  </component>
   <component name="ProjectId" id="1cuvslIpiqQYdxCeBDH6Iga62tY" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="RhythmsOfRelating" type="b2602c69:ProjectViewProjectNode" />
-              <item name="RhythmsOfRelating" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="RhythmsOfRelating" type="b2602c69:ProjectViewProjectNode" />
-              <item name="RhythmsOfRelating" type="462c0819:PsiDirectoryNode" />
-              <item name="LSLanalysis" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="RhythmsOfRelating" type="b2602c69:ProjectViewProjectNode" />
-              <item name="RhythmsOfRelating" type="462c0819:PsiDirectoryNode" />
-              <item name="LSLanalysis" type="462c0819:PsiDirectoryNode" />
-              <item name="analysis" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
-  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -148,18 +55,6 @@
       <recent name="C:\Users\Phoebe Chen\Downloads\harmonic-dissonance\LSLanalysis\support" />
       <recent name="C:\Users\Phoebe Chen\Downloads\harmonic-dissonance" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager" selected="Python.debugging">
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
@@ -269,10 +164,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.Unnamed" />
-      <item itemvalue="Python.main" />
-      <item itemvalue="Python.generate_random_samples" />
-      <item itemvalue="Python.generate_random_samples (1)" />
       <item itemvalue="Python.debugging" />
+      <item itemvalue="Python.generate_random_samples (1)" />
+      <item itemvalue="Python.generate_random_samples" />
+      <item itemvalue="Python.main" />
     </list>
     <recent_temporary>
       <list>
@@ -296,28 +191,6 @@
     </task>
     <servers />
   </component>
-  <component name="ToolWindowManager">
-    <frame x="56" y="23" width="1086" height="822" extended-state="1" />
-    <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.30328637" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info active="true" anchor="bottom" id="Python Console" visible="true" weight="0.3219178" />
-      <window_info anchor="bottom" id="Terminal" weight="0.32876712" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
-  </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.log" />
   </component>
@@ -326,14 +199,7 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="RECENTLY_FILTERED_USER_GROUPS">
-                <collection />
-              </option>
-              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
-                <collection />
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
@@ -352,15 +218,21 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="464" y="174" key="#com.intellij.ide.util.MemberChooser" timestamp="1596596696803">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="464" y="174" key="#com.intellij.ide.util.MemberChooser/0.0.1707.920@0.0.1707.920" timestamp="1596596696803" />
     <state x="388" y="206" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1596137161784">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="388" y="206" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1707.920@0.0.1707.920" timestamp="1596137161784" />
-    <state x="1238" y="412" key="FileChooserDialogImpl" timestamp="1591643929150">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state x="825" y="271" key="FileChooserDialogImpl" timestamp="1596596708854">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
+    <state x="825" y="271" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1596596708854" />
     <state x="1238" y="412" key="FileChooserDialogImpl/0.0.2560.1400@0.0.2560.1400" timestamp="1591643929150" />
     <state width="1362" height="166" key="GridCell.Tab.0.bottom" timestamp="1591401842108">
       <screen x="0" y="0" width="2560" height="1400" />
@@ -406,43 +278,5 @@
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="557" y="200" width="672" height="678" key="search.everywhere.popup/0.0.1707.920@0.0.1707.920" timestamp="1595714804231" />
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/PycharmProjects/untitled/venv/pylsl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="18" column="12" lean-forward="true" selection-start-line="18" selection-start-column="12" selection-end-line="18" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/LSLanalysis/analysis/correlation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-969">
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/debugging.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="311">
-          <caret line="39" selection-start-line="39" selection-end-line="39" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="284">
-          <caret line="300" column="23" selection-start-line="300" selection-start-column="23" selection-end-line="300" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
   </component>
 </project>
