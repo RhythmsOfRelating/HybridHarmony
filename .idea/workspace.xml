@@ -21,6 +21,24 @@
   <component name="ChangeListManager">
     <list default="true" id="cd79da94-b3c9-4185-a6ae-b372bea5b54e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/buffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/buffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/correlation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/select.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/topo.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/gui/gui.ui" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/gui/gui.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/log/development.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/logging.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/main_GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/main_GUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/generate_brainvision_samples.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp16" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp16.vhdr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp16.vmrk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp32" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp32.vhdr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/support/liveamp32.vmrk" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -11,17 +11,17 @@ from scipy.signal import hilbert
 from scipy.signal import butter, lfilter
 from astropy.stats import circmean
 from itertools import product
+from osc4py3.as_allthreads import *
+from osc4py3 import oscbuildparse
+from osc4py3 import oscchannel as osch
 
 current = os.path.dirname(__file__)
-# PATH_TOPO = os.path.join(current, 'topo.json')
-# PATH_SELECT = os.path.join(current, 'select.json')
 
 STREAM_COUNT = None
 SAMPLE_RATE = None
 CHANNEL_COUNT = None
 LAST_CALCULATION = local_clock()
 
-WINDOW = 3  # seconds
 COEFFICIENTS = None
 CONNECTIONS = None
 HANN = None
@@ -29,20 +29,26 @@ ORDER = 5
 OUTLET = None
 OUTLET_POWER = None
 CHOOSE_CHANNELS = None
-
+WINDOW = 3
 
 class Correlation:
 
-    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params):
+    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, norm_params):
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
         self.sample_size = int(self.sample_rate * WINDOW)
         self.channel_count = channel_count
         self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
+        self.OSC_params = OSC_params
+        self.norm_params = norm_params
         self.mode = mode
         self.chn_type = chn_type
+        self.rvalues = None
+        self.timestamp = None
         self._setup()
+        if OSC_params[0] is not None:
+            self._setup_OSC()
     
     def _changed_since_last_run(self):
         if CHANNEL_COUNT != self.channel_count:
@@ -74,10 +80,26 @@ class Correlation:
         OUTLET_POWER = self._setup_outlet_power()
         CHOOSE_CHANNELS = self.chnParams
 
-    def _setup_outlet(self):
 
+    def _setup_OSC(self):
+        # reading params
+        IP = self.OSC_params[0]
+        port = int(self.OSC_params[1])
+        # Start the system.
+        osc_startup()
+        # Make client channels to send packets.
+        try:
+            osc_udp_client(IP, int(port), "Rvalues")
+        except:
+            osch.terminate_all_channels()
+            osc_udp_client(IP, int(port), "Rvalues")
         sample_size = CONNECTIONS * len(self.freqParams)
-        
+        # first message is empty
+        msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
+        osc_send(msg, 'Rvalues')
+
+    def _setup_outlet(self):
+        sample_size = CONNECTIONS * len(self.freqParams)
         if sample_size == 0:
             return
         
@@ -133,7 +155,8 @@ class Correlation:
     def run(self):
         global LAST_CALCULATION
         trailing_timestamp = self._find_trailing_timestamp()
-        
+
+
         if trailing_timestamp != LAST_CALCULATION:
             LAST_CALCULATION = trailing_timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp)
@@ -142,16 +165,33 @@ class Correlation:
             analytic_matrix = self._calculate_all(analysis_window)
             rvalues = self._calculate_rvalues(analytic_matrix, self.mode)
             power_values = self._calculate_power(analytic_matrix)
-            
+
+            # minmax normalization
+            if self.norm_params[0] is not None:
+                rvalues = [self._clamp((r - self.norm_params[0]) / (self.norm_params[1]-self.norm_params[0])) for r in rvalues]
+            # saving timestamp and rvals information in class attributes
+            self.rvalues = rvalues
+            self.timestamp = trailing_timestamp
+            # sending LSL packets
             if OUTLET:
                 self.logger.debug("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
+                print("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
+                print(rvalues)
                 OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
             if OUTLET_POWER:
                 OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
-
+            # sending OSC packets
+            if self.OSC_params[0] is not None:  # if sending OSC
+                sample_size = CONNECTIONS * len(self.freqParams)
+                msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, rvalues)
+                osc_send(msg, 'Rvalues')
+                osc_process()
         else:
             self.logger.debug("Still waiting for new data to arrive, skipping analysis")
             return
+
+    def _clamp(self, n):
+        return max(min(1, n), 0)
 
     def _apply_window_weights(self, analysis_window):
         for uid in analysis_window.keys():
@@ -178,7 +218,7 @@ class Correlation:
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))
             sample_start = len(buffer) - self.sample_size - sample_offset
-            
+
             if sample_start < 0:
                 self.logger.info("Not enough data to process in buffer {}, using dummy data".format(uid))
                 analysis_window[uid] = np.zeros((self.sample_size, self.channel_count))
@@ -221,11 +261,9 @@ class Correlation:
         return product
 
     def compute_sync(self, complex_signal: np.ndarray, mode: str) -> np.ndarray:
-
         n_ch, n_freq, n_samp = complex_signal.shape[2], complex_signal.shape[0], \
                                complex_signal.shape[3]
 
-        # calculate all epochs at once, the only downside is that the disk may not have enough space
         complex_signal = complex_signal.reshape(n_freq, 2 * n_ch, n_samp)
         transpose_axes = (0, 2, 1)
         if mode.lower() == 'plv':
@@ -244,7 +282,7 @@ class Correlation:
 
         elif mode.lower() == 'power correlation':
             env = np.abs(complex_signal) ** 2
-            mu_env = np.mean(env, axis=3).reshape(n_freq, 2 * n_ch, 1)
+            mu_env = np.mean(env, axis=2).reshape(n_freq, 2 * n_ch, 1)
             env = env - mu_env
             con = np.einsum('ilm,imk->ilk', env, env.transpose(transpose_axes)) / \
                   np.sqrt(np.einsum('il,ik->ilk', np.sum(env ** 2, axis=2), np.sum(env ** 2, axis=2)))
@@ -267,7 +305,7 @@ class Correlation:
 
         elif mode.lower() == 'ccorr':
             angle = np.angle(complex_signal)
-            mu_angle = circmean(angle, axis=3).reshape(n_freq, 2 * n_ch, 1)
+            mu_angle = circmean(angle, axis=2).reshape(n_freq, 2 * n_ch, 1)
             angle = np.sin(angle - mu_angle)
 
             formula = 'ilm,imk->ilk'
@@ -288,12 +326,13 @@ class Correlation:
             con = self.compute_sync(analytic_matrix[:, pair, :, :], mode)
             # the connectivity matrix for the current pair. shape is (n_freq, n_ch, n_ch)
             con = con[:, 0:self.channel_count, self.channel_count:]
-            result = []
-            for i, freq in enumerate(self.freqParams.keys()):
-                if 'all-to-all' in self.chn_type:  # all to all correlation
-                    result.append(np.nanmean(con[i, self.chnParams[freq]][:, self.chnParams[freq]], axis=(0,1)))
-                else:  # channel to channel correlation
-                    result.append(np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]]))
+            if 'all-to-all' in self.chn_type:  # all to all correlation
+                result = [np.nanmean(con[i, self.chnParams[freq]][:, self.chnParams[freq]], axis=(0, 1))
+                          for i, freq in enumerate(self.freqParams.keys())]
+            else:  # channel to channel correlation
+                result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]])
+                          for i, freq in enumerate(self.freqParams.keys())]
+
             # adjust result according to weight parameters
             weights = list(self.weightParams.values())
             result = [r*weight/sum(weights) for r, weight in zip(result, weights)]

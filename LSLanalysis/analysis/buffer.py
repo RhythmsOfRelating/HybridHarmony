@@ -4,7 +4,7 @@ import time
 from collections import deque
 from pylsl import local_clock
 
-BUFFER_WINDOW = 30 # seconds
+BUFFER_WINDOW = 20 # seconds
 
 class Buffer:
   def __init__(self, discovery):

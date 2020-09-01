@@ -1,19 +1,28 @@
 import logging
-
 from threading import current_thread, Thread
+from collections import deque
 from .buffer import Buffer
 from .correlation_perFreq import Correlation
+from .output_buffer import OutputBuffer
 
 class Analysis:
-  def __init__(self, discovery, mode, chn_type, corr_params):
+  def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, window_params, norm_params):
     self.logger = logging.getLogger(__name__)
     self.discovery = discovery
     self.mode = mode
     self.chn_type = chn_type
     self.corr_params = corr_params
     self.buffer = Buffer(discovery)
+    self.OSC_params = OSC_params
+    self.window_size, self.window_lag = window_params[0], window_params[1]
+    self.norm_params = norm_params
     self.thread = None
     self.running = False
+
+    # queue for relative analysis
+    self.output_size = sum(list(range(1, len(self.discovery.streams_by_uid)))) * len(self.corr_params[0]) + 1  # output size includes timestamp
+
+    self.output_buffer = OutputBuffer(size=self.output_size * 100)
 
   def start(self):
     if self.thread:
@@ -57,14 +66,17 @@ class Analysis:
     if not sample_rate or not channel_count:
       return
 
-    self.logger.info("Performing stream analysis")
-
-    Correlation(
+    corr = Correlation(
       sample_rate=sample_rate,
       channel_count=channel_count,
       buffers=self.buffer.buffers_by_uid,
-      mode = self.mode,
-      chn_type = self.chn_type,
-      corr_params = self.corr_params
-    ).run()
+      mode=self.mode,
+      chn_type=self.chn_type,
+      corr_params=self.corr_params,
+      OSC_params=self.OSC_params,
+      norm_params=self.norm_params)
+    corr.run()
+    # if corr.rvalues is not None:
+    #   self.output_buffer.extend([corr.timestamp] + corr.rvalues)
+
 
