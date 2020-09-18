@@ -5,7 +5,9 @@
 # Created by: PyQt5 UI code generator 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
-import sys, time
+import sys
+import time
+from os import path, getcwd
 from PyQt5 import QtCore, QtGui, QtWidgets
 from acquisition import Discovery
 from analysis import Analysis
@@ -399,7 +401,9 @@ class Ui_MainWindow(object):
         self.btn_start.setText(_translate("MainWindow", "4. start"))
 
     def setup(self):
-        logging.config.fileConfig('logging.conf')
+        log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
+        log_path = path.join(log_path, 'logging.conf')
+        logging.config.fileConfig(log_path)
 
         # initialization
         self.conn_params = []
