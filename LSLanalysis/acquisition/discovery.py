@@ -28,7 +28,8 @@ class Discovery:
   def stop(self):
     if not self.thread:
       return True
-
+    for stream in self.streams_by_uid:
+      stream.stop()
     self.running = False
     if current_thread() is not self.thread:
       self.thread.join()

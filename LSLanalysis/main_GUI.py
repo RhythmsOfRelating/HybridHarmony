@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 import sys
 import time
-from os import path, getcwd
+from os import path
 from PyQt5 import QtCore, QtGui, QtWidgets
 from acquisition import Discovery
 from analysis import Analysis
@@ -399,6 +399,9 @@ class Ui_MainWindow(object):
         self.checkBox_osc.setText(_translate("MainWindow", "sending through OSC"))
         self.btn_stop.setText(_translate("MainWindow", "stop"))
         self.btn_start.setText(_translate("MainWindow", "4. start"))
+
+    def closeEvent(self, event):
+        self.discovery.stop()
 
     def setup(self):
         log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
