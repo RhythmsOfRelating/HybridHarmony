@@ -21,7 +21,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cd79da94-b3c9-4185-a6ae-b372bea5b54e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LSLanalysis/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/analysis/correlation_perFreq.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/LSLanalysis/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +58,7 @@
       <recent name="C:\Users\Phoebe Chen\Downloads\harmonic-dissonance" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.debugging">
+  <component name="RunManager" selected="Python.main_GUI">
     <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="harmonic-dissonance" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -163,15 +164,38 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="main_GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="harmonic-dissonance" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/LSLanalysis" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/LSLanalysis/main_GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.Unnamed" />
       <item itemvalue="Python.debugging" />
       <item itemvalue="Python.generate_random_samples (1)" />
       <item itemvalue="Python.generate_random_samples" />
       <item itemvalue="Python.main" />
+      <item itemvalue="Python.main_GUI" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_GUI" />
         <item itemvalue="Python.debugging" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.generate_random_samples (1)" />
@@ -234,47 +258,26 @@
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="825" y="271" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1596596708854" />
-    <state x="1238" y="412" key="FileChooserDialogImpl/0.0.2560.1400@0.0.2560.1400" timestamp="1591643929150" />
-    <state width="1362" height="166" key="GridCell.Tab.0.bottom" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state width="1058" height="375" key="GridCell.Tab.0.bottom" timestamp="1600454777343">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state width="1362" height="166" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.0.center" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state width="1058" height="375" key="GridCell.Tab.0.bottom/0.0.1707.920@0.0.1707.920" timestamp="1600454777343" />
+    <state width="1058" height="375" key="GridCell.Tab.0.center" timestamp="1600454777343">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state width="1362" height="166" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.0.left" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state width="1058" height="375" key="GridCell.Tab.0.center/0.0.1707.920@0.0.1707.920" timestamp="1600454777343" />
+    <state width="1058" height="375" key="GridCell.Tab.0.left" timestamp="1600454777343">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state width="1362" height="166" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.0.right" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state width="1058" height="375" key="GridCell.Tab.0.left/0.0.1707.920@0.0.1707.920" timestamp="1600454777343" />
+    <state width="1058" height="375" key="GridCell.Tab.0.right" timestamp="1600454777343">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state width="1362" height="166" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.1.bottom" timestamp="1591401842109">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state width="1362" height="166" key="GridCell.Tab.1.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842109" />
-    <state width="1362" height="166" key="GridCell.Tab.1.center" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state width="1362" height="166" key="GridCell.Tab.1.center/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.1.left" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state width="1362" height="166" key="GridCell.Tab.1.left/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
-    <state width="1362" height="166" key="GridCell.Tab.1.right" timestamp="1591401842108">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state width="1362" height="166" key="GridCell.Tab.1.right/0.0.2560.1400@0.0.2560.1400" timestamp="1591401842108" />
+    <state width="1058" height="375" key="GridCell.Tab.0.right/0.0.1707.920@0.0.1707.920" timestamp="1600454777343" />
     <state x="250" y="192" key="Vcs.Push.Dialog.v2" timestamp="1596137117201">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="250" y="192" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1596137117201" />
-    <state x="1434" y="36" width="1033" height="766" key="dock-window-1" timestamp="1591397549211">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state x="1434" y="36" width="1033" height="766" key="dock-window-1/0.0.2560.1400@0.0.2560.1400" timestamp="1591397549211" />
     <state x="557" y="200" width="672" height="678" key="search.everywhere.popup" timestamp="1595714804231">
       <screen x="0" y="0" width="1707" height="920" />
     </state>

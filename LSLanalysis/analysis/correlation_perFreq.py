@@ -196,7 +196,7 @@ class Correlation:
     def _apply_window_weights(self, analysis_window):
         for uid in analysis_window.keys():
             analysis_window[uid] = np.multiply(analysis_window[uid], HANN[:, None])
-        self.logger.debug("Applying window weights with %s samples and % channels." % analysis_window[uid].shape)
+        self.logger.debug("Applying window weights with %s samples and %s channels." % analysis_window[uid].shape)
 
     def _calculate_power(self, analytic_matrix):
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
