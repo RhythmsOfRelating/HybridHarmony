@@ -175,8 +175,6 @@ class Correlation:
             # sending LSL packets
             if OUTLET:
                 self.logger.debug("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
-                print("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
-                print(rvalues)
                 OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
             if OUTLET_POWER:
                 OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)

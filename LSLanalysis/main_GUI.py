@@ -459,7 +459,7 @@ class Ui_MainWindow(object):
 
     def fun_load_streams(self):
         """
-        button load_streams
+        button 2. Scan for LSL streams
         """
         # determine columns based on freq bands
         cols = ['Stream ID', "channel count", 'sampling rate']
