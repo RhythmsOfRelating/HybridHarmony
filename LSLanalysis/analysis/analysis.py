@@ -3,7 +3,6 @@ from threading import current_thread, Thread
 from collections import deque
 from .buffer import Buffer
 from .correlation_perFreq import Correlation
-from .output_buffer import OutputBuffer
 
 class Analysis:
   def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, window_params, norm_params):
@@ -18,11 +17,7 @@ class Analysis:
     self.norm_params = norm_params
     self.thread = None
     self.running = False
-
-    # queue for relative analysis
-    self.output_size = sum(list(range(1, len(self.discovery.streams_by_uid)))) * len(self.corr_params[0]) + 1  # output size includes timestamp
-
-    self.output_buffer = OutputBuffer(size=self.output_size * 100)
+    self.corr = None
 
   def start(self):
     if self.thread:
@@ -31,6 +26,24 @@ class Analysis:
     self.thread = Thread(target=self._update, daemon=True, name="Buffering")
     self.running = True
     self.thread.start()
+
+    # create correlation object
+    sample_rate = self.discovery.sample_rate
+    channel_count = self.discovery.channel_count
+    # Make sure we're still connected and have a sample rate
+    if not sample_rate or not channel_count:
+      self.logger.warning('connection broken.')
+      return
+
+    self.corr = Correlation(
+      sample_rate=sample_rate,
+      channel_count=channel_count,
+      buffers=self.buffer.buffers_by_uid,
+      mode=self.mode,
+      chn_type=self.chn_type,
+      corr_params=self.corr_params,
+      OSC_params=self.OSC_params,
+      norm_params=self.norm_params)
 
     return True
 
@@ -58,25 +71,4 @@ class Analysis:
     # Make sure we have buffers to analyze
     if len(self.buffer.buffers_by_uid) == 0:
       return
-
-    sample_rate = self.discovery.sample_rate
-    channel_count = self.discovery.channel_count
-
-    # Make sure we're still connected and have a sample rate
-    if not sample_rate or not channel_count:
-      return
-
-    corr = Correlation(
-      sample_rate=sample_rate,
-      channel_count=channel_count,
-      buffers=self.buffer.buffers_by_uid,
-      mode=self.mode,
-      chn_type=self.chn_type,
-      corr_params=self.corr_params,
-      OSC_params=self.OSC_params,
-      norm_params=self.norm_params)
-    corr.run()
-    # if corr.rvalues is not None:
-    #   self.output_buffer.extend([corr.timestamp] + corr.rvalues)
-
-
+    self.corr.run()

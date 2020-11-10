@@ -17,26 +17,16 @@ from osc4py3 import oscchannel as osch
 
 current = os.path.dirname(__file__)
 
-STREAM_COUNT = None
-SAMPLE_RATE = None
-CHANNEL_COUNT = None
 LAST_CALCULATION = local_clock()
-
-COEFFICIENTS = None
-CONNECTIONS = None
-HANN = None
-ORDER = 5
-OUTLET = None
-OUTLET_POWER = None
-CHOOSE_CHANNELS = None
 WINDOW = 3
+ORDER = 5
 
 class Correlation:
 
     def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, norm_params):
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
-        self.sample_size = int(self.sample_rate * WINDOW)
+        self.sample_size = int(sample_rate * WINDOW)
         self.channel_count = channel_count
         self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
@@ -49,37 +39,32 @@ class Correlation:
         self._setup()
         if OSC_params[0] is not None:
             self._setup_OSC()
-    
-    def _changed_since_last_run(self):
-        if CHANNEL_COUNT != self.channel_count:
-            return True
-        
-        if SAMPLE_RATE != self.sample_rate:
-            return True
-        
-        if STREAM_COUNT != len(self.buffers):
-            return True
-        
-        return False
-    
-    def _setup(self):
-        if not self._changed_since_last_run():
-            return
-        
-        global STREAM_COUNT, SAMPLE_RATE, CHANNEL_COUNT
-        global COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER, CHOOSE_CHANNELS
-        
-        self.logger.info("Recalculating correlation constants for changed stream properties")
-        STREAM_COUNT = len(self.buffers)
-        SAMPLE_RATE = self.sample_rate
-        CHANNEL_COUNT = self.channel_count
-        COEFFICIENTS = self._setup_coefficients()
-        HANN = self._setup_hann()
-        CONNECTIONS = self._setup_num_connections()
-        OUTLET = self._setup_outlet()
-        OUTLET_POWER = self._setup_outlet_power()
-        CHOOSE_CHANNELS = self.chnParams
 
+
+    # def _changed_since_last_run(self):
+    #     if CHANNEL_COUNT != self.channel_count:
+    #         return True
+    #
+    #     if SAMPLE_RATE != self.sample_rate:
+    #         return True
+    #
+    #     if STREAM_COUNT != len(self.buffers):
+    #         return True
+    #
+    #     return False
+    #
+    def _setup(self):
+        # moving global variables to class parameters
+        self.STREAM_COUNT = len(self.buffers)
+        self.SAMPLE_RATE = self.sample_rate
+        self.CHANNEL_COUNT = self.channel_count
+        self.COEFFICIENTS = self._setup_coefficients()
+        self.HANN = self._setup_hann()
+        self.CONNECTIONS = self._setup_num_connections()
+        self.OUTLET = self._setup_outlet()
+        self.OUTLET_POWER = self._setup_outlet_power()
+
+        self.logger.warning('setup '+str(self.CONNECTIONS)+str(len(self.buffers)))
 
     def _setup_OSC(self):
         # reading params
@@ -93,13 +78,13 @@ class Correlation:
         except:
             osch.terminate_all_channels()
             osc_udp_client(IP, int(port), "Rvalues")
-        sample_size = CONNECTIONS * len(self.freqParams)
+        sample_size = self.CONNECTIONS * len(self.freqParams)
         # first message is empty
         msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
         osc_send(msg, 'Rvalues')
 
     def _setup_outlet(self):
-        sample_size = CONNECTIONS * len(self.freqParams)
+        sample_size = self.CONNECTIONS * len(self.freqParams)
         if sample_size == 0:
             return
         
@@ -121,7 +106,8 @@ class Correlation:
 
     # phoebe edit
     def _setup_outlet_power(self):
-        sample_size =  STREAM_COUNT * CHANNEL_COUNT * len(self.freqParams)
+        sample_size =  self.STREAM_COUNT * self.channel_count * len(self.freqParams)
+        self.logger.warning('power sample size is %s %s %s' % (self.STREAM_COUNT, self.channel_count, len(self.freqParams)) )
         if sample_size == 0:
             return
         info = StreamInfo('Powervals', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "Pvals-{}".format(getpid()))
@@ -156,8 +142,9 @@ class Correlation:
         global LAST_CALCULATION
         trailing_timestamp = self._find_trailing_timestamp()
 
-
         if trailing_timestamp != LAST_CALCULATION:
+            # self.logger.warning('trailing timestamp %s, last calculation %s' % (trailing_timestamp, LAST_CALCULATION))
+
             LAST_CALCULATION = trailing_timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp)
             self._apply_window_weights(analysis_window)
@@ -169,18 +156,16 @@ class Correlation:
             # minmax normalization
             if self.norm_params[0] is not None:
                 rvalues = [self._clamp((r - self.norm_params[0]) / (self.norm_params[1]-self.norm_params[0])) for r in rvalues]
-            # saving timestamp and rvals information in class attributes
-            self.rvalues = rvalues
-            self.timestamp = trailing_timestamp
             # sending LSL packets
-            if OUTLET:
-                self.logger.debug("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
-                OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
-            if OUTLET_POWER:
-                OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
+            # self.logger.warning(str(self.OUTLET))
+            if self.OUTLET:
+                self.logger.warning("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
+                self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
+            if self.OUTLET_POWER:
+                self.OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
             # sending OSC packets
             if self.OSC_params[0] is not None:  # if sending OSC
-                sample_size = CONNECTIONS * len(self.freqParams)
+                sample_size = self.CONNECTIONS * len(self.freqParams)
                 msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, rvalues)
                 osc_send(msg, 'Rvalues')
                 osc_process()
@@ -193,7 +178,7 @@ class Correlation:
 
     def _apply_window_weights(self, analysis_window):
         for uid in analysis_window.keys():
-            analysis_window[uid] = np.multiply(analysis_window[uid], HANN[:, None])
+            analysis_window[uid] = np.multiply(analysis_window[uid], self.HANN[:, None])
         self.logger.debug("Applying window weights with %s samples and %s channels." % analysis_window[uid].shape)
 
     def _calculate_power(self, analytic_matrix):
@@ -234,7 +219,7 @@ class Correlation:
     def _calculate_all(self, analysis_window):
         all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
 
-        all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(COEFFICIENTS)])
+        all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(self.COEFFICIENTS)])
 
         return all_analytic
 

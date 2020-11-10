@@ -596,7 +596,7 @@ class Ui_MainWindow(object):
                 self._enableEdit(False)
 
             except Exception as e:
-                self.param_check.setText("Error message: ", str(e))
+                self.param_check.setText("Error message: " + str(e))
 
     def _enableEdit(self, bool):
         self.btn_start.setEnabled(bool)
@@ -615,6 +615,7 @@ class Ui_MainWindow(object):
         # stop analysis
         self.analysis.stop()
         self.analysis_running = False
+        self.discovery.stop()
         # self.outputAnalysis.stop()
         self.btn_stop.setEnabled(False)
         self.btn_start.setEnabled(True)
