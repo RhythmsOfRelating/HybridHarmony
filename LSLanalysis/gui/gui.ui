@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>855</width>
-    <height>579</height>
+    <width>964</width>
+    <height>669</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -160,15 +160,6 @@
        </color>
       </brush>
      </colorrole>
-     <colorrole role="PlaceholderText">
-      <brush brushstyle="NoBrush">
-       <color alpha="128">
-        <red>99</red>
-        <green>99</green>
-        <blue>99</blue>
-       </color>
-      </brush>
-     </colorrole>
     </active>
     <inactive>
      <colorrole role="WindowText">
@@ -303,15 +294,6 @@
         <red>0</red>
         <green>0</green>
         <blue>0</blue>
-       </color>
-      </brush>
-     </colorrole>
-     <colorrole role="PlaceholderText">
-      <brush brushstyle="NoBrush">
-       <color alpha="128">
-        <red>99</red>
-        <green>99</green>
-        <blue>99</blue>
        </color>
       </brush>
      </colorrole>
@@ -452,15 +434,6 @@
        </color>
       </brush>
      </colorrole>
-     <colorrole role="PlaceholderText">
-      <brush brushstyle="NoBrush">
-       <color alpha="128">
-        <red>99</red>
-        <green>99</green>
-        <blue>99</blue>
-       </color>
-      </brush>
-     </colorrole>
     </disabled>
    </palette>
   </property>
@@ -472,6 +445,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="1" column="2">
+     <widget class="QTextBrowser" name="textBrowser"/>
+    </item>
     <item row="3" column="0">
      <widget class="QTableWidget" name="infoTable">
       <property name="minimumSize">
@@ -495,63 +471,46 @@
       <column/>
      </widget>
     </item>
-    <item row="1" column="1" rowspan="2">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="btn_loadBands">
-      <property name="text">
-       <string>1. set frequency bands</string>
-      </property>
-     </widget>
-    </item>
     <item row="5" column="0">
      <widget class="QPushButton" name="btn_loadStreams">
+      <property name="toolTip">
+       <string>detect LSL streams for analysis. Streams should be displayed on the table above.</string>
+      </property>
+      <property name="toolTipDuration">
+       <number>7000</number>
+      </property>
       <property name="text">
-       <string>2. load LSL streams</string>
+       <string>1. load LSL streams</string>
       </property>
      </widget>
     </item>
-    <item row="8" column="0">
-     <widget class="QPushButton" name="btn_fixParams">
-      <property name="text">
-       <string>3. Lock parameters</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="0">
-     <widget class="QPushButton" name="btn_unlock">
-      <property name="text">
-       <string>unlock parameters</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QTableWidget" name="freqTable">
-      <property name="minimumSize">
-       <size>
-        <width>355</width>
-        <height>193</height>
-       </size>
-      </property>
-      <property name="columnCount">
-       <number>4</number>
-      </property>
-      <column/>
-      <column/>
-      <column/>
-      <column/>
-     </widget>
+    <item row="6" column="2" rowspan="3">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="checkBox_osc">
+        <property name="text">
+         <string>sending through OSC</string>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="btn_stop">
+        <property name="text">
+         <string>stop</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="btn_start">
+        <property name="text">
+         <string>2. start</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item row="2" column="2" rowspan="2">
      <layout class="QGridLayout" name="params">
@@ -564,7 +523,171 @@
       <property name="spacing">
        <number>2</number>
       </property>
-      <item row="3" column="2">
+      <item row="9" column="2">
+       <widget class="QLineEdit" name="lineEdit_oscIP">
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="text">
+         <string>10.0.0.24</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QComboBox" name="comboBox_device">
+        <item>
+         <property name="text">
+          <string>MUSE</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>EMOTIV EPOC</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>EMOTIV EPOC+</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Enobio</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QComboBox" name="comboBox_chn">
+        <item>
+         <property name="text">
+          <string>one-to-one (e.g. Fp1 is only correlated with Fp1 and so on.)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>all-to-all (e.g. each channel is correlated with all the other available channels in the selection.)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_oscPort">
+        <property name="text">
+         <string>OSC port (optional) </string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_wsize">
+          <property name="text">
+           <string>3</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="7" column="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_normMin">
+          <property name="text">
+           <string>Min.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_normMin">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_normMax">
+          <property name="text">
+           <string>Max.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_normMax">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_oscIP">
+        <property name="text">
+         <string>OSC IP address (optional)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_chn">
+        <property name="font">
+         <font>
+          <family>.SF NS Text</family>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Connectivity type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Normalization (MinMax)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_input">
+        <property name="font">
+         <font>
+          <family>.SF NS Text</family>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>input type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_device">
+        <property name="font">
+         <font>
+          <family>.SF NS Text</family>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>device</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_conn">
+        <property name="font">
+         <font>
+          <family>.SF NS Text</family>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Connectivity metric   &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
        <widget class="QComboBox" name="comboBox_conn">
         <item>
          <property name="text">
@@ -598,29 +721,7 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QComboBox" name="comboBox_input">
-        <item>
-         <property name="text">
-          <string>EEG</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_device">
-        <property name="font">
-         <font>
-          <family>Times New Roman</family>
-          <pointsize>36</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Device&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -633,132 +734,28 @@
         </property>
        </spacer>
       </item>
-      <item row="5" column="2">
-       <widget class="QCheckBox" name="checkBox_wlag">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>sending relative synchrony values based on *window lag* seconds ago.</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_oscIP">
-        <property name="text">
-         <string>OSC IP address (optional)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QComboBox" name="comboBox_chn">
+      <item row="3" column="2">
+       <widget class="QComboBox" name="comboBox_input">
         <item>
          <property name="text">
-          <string>one-to-one (e.g. Fp1 is only correlated with Fp1 and so on.)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>all-to-all (e.g. each channel is correlated with all the other available channels in the selection.)</string>
+          <string>EEG</string>
          </property>
         </item>
        </widget>
       </item>
-      <item row="4" column="2">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLineEdit" name="lineEdit_wsize">
-          <property name="text">
-           <string>3</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_wlag">
-          <property name="text">
-           <string>window lag (optional)</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_wlag">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="9" column="2">
+      <item row="10" column="2">
        <widget class="QLineEdit" name="lineEdit_oscCH">
         <property name="text">
          <string>9000</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
-       <widget class="QLineEdit" name="lineEdit_oscIP">
-        <property name="statusTip">
-         <string/>
-        </property>
-        <property name="text">
-         <string>10.0.0.24</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QComboBox" name="comboBox_device">
-        <item>
-         <property name="text">
-          <string>MUSE</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>EMOTIV EPOC</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>EMOTIV EPOC+</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Enobio</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_conn">
-        <property name="font">
-         <font>
-          <family>Times New Roman</family>
-          <pointsize>36</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Connectivity metric   &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_oscPort">
-        <property name="text">
-         <string>OSC port (optional) </string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label_wsize">
         <property name="font">
          <font>
-          <family>Times New Roman</family>
-          <pointsize>36</pointsize>
+          <family>.SF NS Text</family>
+          <pointsize>13</pointsize>
          </font>
         </property>
         <property name="text">
@@ -766,70 +763,24 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Parameters</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_input">
-        <property name="font">
-         <font>
-          <family>Times New Roman</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Input type&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string/>
         </property>
        </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_chn">
-        <property name="font">
-         <font>
-          <family>Times New Roman</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Connectivity type</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Normalization (MinMax)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="label_normMin">
-          <property name="text">
-           <string>Min.</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_normMin">
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_normMax">
-          <property name="text">
-           <string>Max.</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_normMax">
-          <property name="text">
-           <string>1</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </item>
@@ -840,46 +791,71 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="3">
+    <item row="1" column="0">
+     <widget class="QTableWidget" name="freqTable">
+      <property name="minimumSize">
+       <size>
+        <width>355</width>
+        <height>193</height>
+       </size>
+      </property>
+      <property name="columnCount">
+       <number>4</number>
+      </property>
+      <column/>
+      <column/>
+      <column/>
+      <column/>
+     </widget>
+    </item>
+    <item row="0" column="2">
      <widget class="QLabel" name="label">
       <property name="font">
        <font>
-        <family>Times New Roman</family>
-        <pointsize>36</pointsize>
+        <pointsize>18</pointsize>
        </font>
       </property>
       <property name="text">
-       <string>Welcome, specify your values and press on 'Start'</string>
+       <string>console</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="2" rowspan="3">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="checkBox_osc">
-        <property name="text">
-         <string>sending through OSC</string>
-        </property>
-        <property name="tristate">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="btn_stop">
-        <property name="text">
-         <string>stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="btn_start">
-        <property name="text">
-         <string>4. start</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+    <item row="0" column="1" rowspan="3">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Frequency bands for analysis</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Input data streams</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -888,12 +864,31 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>855</width>
-     <height>18</height>
+     <width>964</width>
+     <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menusupport">
+    <property name="title">
+     <string>support</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actiongenerate_random_data"/>
+    <addaction name="actionplay_a_sample_recording_as_test_data"/>
+   </widget>
+   <addaction name="menusupport"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actiongenerate_random_data">
+   <property name="text">
+    <string>play random signal as test data</string>
+   </property>
+  </action>
+  <action name="actionplay_a_sample_recording_as_test_data">
+   <property name="text">
+    <string>play a sample recording as test data</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
