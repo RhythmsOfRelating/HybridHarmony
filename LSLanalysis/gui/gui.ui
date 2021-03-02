@@ -160,6 +160,15 @@
        </color>
       </brush>
      </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
+        <red>99</red>
+        <green>99</green>
+        <blue>99</blue>
+       </color>
+      </brush>
+     </colorrole>
     </active>
     <inactive>
      <colorrole role="WindowText">
@@ -297,6 +306,15 @@
        </color>
       </brush>
      </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
+        <red>99</red>
+        <green>99</green>
+        <blue>99</blue>
+       </color>
+      </brush>
+     </colorrole>
     </inactive>
     <disabled>
      <colorrole role="WindowText">
@@ -431,6 +449,15 @@
         <red>0</red>
         <green>0</green>
         <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
+        <red>99</red>
+        <green>99</green>
+        <blue>99</blue>
        </color>
       </brush>
      </colorrole>
@@ -876,17 +903,29 @@
     <addaction name="actiongenerate_random_data"/>
     <addaction name="actionplay_a_sample_recording_as_test_data"/>
    </widget>
+   <widget class="QMenu" name="menufunctions">
+    <property name="title">
+     <string>functions</string>
+    </property>
+    <addaction name="actionbridge"/>
+   </widget>
    <addaction name="menusupport"/>
+   <addaction name="menufunctions"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actiongenerate_random_data">
    <property name="text">
-    <string>play random signal as test data</string>
+    <string>play a random signal for testing</string>
    </property>
   </action>
   <action name="actionplay_a_sample_recording_as_test_data">
    <property name="text">
-    <string>play a sample recording as test data</string>
+    <string>play a sample recording for testing</string>
+   </property>
+  </action>
+  <action name="actionbridge">
+   <property name="text">
+    <string>bridge</string>
    </property>
   </action>
  </widget>
