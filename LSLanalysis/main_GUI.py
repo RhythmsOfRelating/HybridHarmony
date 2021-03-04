@@ -9,12 +9,11 @@ import sys, time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from acquisition import Discovery
 from analysis import Analysis
-from analysis import OutputAnalysis
 import numpy as np
 import logging.config
 import logging
+import os
 from os import path
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -417,10 +416,10 @@ class Ui_MainWindow(object):
         return os.path.join(base_path, relative_path)
 
     def setup(self):
-        # log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
-        # log_path = path.join(log_path, 'logging.conf')
-        # logging.config.fileConfig(log_path)
-        logging.config.fileConfig(self.resource_path('log/logging.conf'))
+        log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
+        log_path = path.join(log_path, 'logging.conf')
+        logging.config.fileConfig(log_path)
+        # logging.config.fileConfig(self.resource_path('log/logging.conf'))
         # initialization
         self.conn_params = []
         self.analysis_running = False
@@ -438,8 +437,6 @@ class Ui_MainWindow(object):
                 self.freqTable.setItem(n_row, n_col, QtWidgets.QTableWidgetItem(default_freqTable[n_row][n_col]))
         # actions
         self.btn_loadStreams.clicked.connect(self.fun_load_streams)
-        # self.btn_fixParams.clicked.connect(self.fun_retrieve_params)
-        # self.btn_unlock.clicked.connect(self.fun_unlock)
         self.btn_start.clicked.connect(self.fun_analyze)
         self.btn_stop.clicked.connect(self.fun_stop)
         self.checkBox_osc.toggled.connect(self.lineEdit_oscIP.setEnabled)
@@ -453,10 +450,7 @@ class Ui_MainWindow(object):
             self.fun_stop()
 
         # reset buttons
-        self.btn_unlock.setEnabled(False)
-        # self.btn_fixParams.setEnabled(True)
         self.btn_loadStreams.setEnabled(True)
-        self.btn_loadBands.setEnabled(True)
         # unlock tables
         self.infoTable.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.freqTable.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
@@ -574,10 +568,7 @@ class Ui_MainWindow(object):
             self.param_check.setText("successfully loaded parameters.")
             self.conn_params = [freqParams, chnParams, weightParams]
             # grey out loading buttons
-            self.btn_loadBands.setEnabled(False)
             self.btn_loadStreams.setEnabled(False)
-            # self.btn_fixParams.setEnabled(False)
-            self.btn_unlock.setEnabled(True)
             # lock tables
             self.infoTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
             self.freqTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -587,7 +578,8 @@ class Ui_MainWindow(object):
         chn_type = self.comboBox_chn.currentText()
         mode = self.comboBox_conn.currentText()
         window_size = self.lineEdit_wsize.text()
-        window_lag = self.lineEdit_wlag.text()
+        # window_lag = self.lineEdit_wlag.text()
+        window_lag = None
         norm_min = self.lineEdit_normMin.text()
         norm_max = self.lineEdit_normMax.text()
 
@@ -595,24 +587,22 @@ class Ui_MainWindow(object):
 
     def fun_analyze(self):
         device, chn_type, mode, window_size, window_lag, norm_min, norm_max = self._read_input()
+        self.fun_retrieve_params()
         IP, port = self._read_osc()
-        try:
-            # starting analysis
-            self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
-                                     corr_params=self.conn_params, OSC_params=[IP, port],
-                                     window_params=[float(window_size), None],  # baseline lag not implemented
-                                     norm_params=[float(norm_min), float(norm_max)])
-            self.analysis.start()
-            # starting output analysis
-            # self.outputAnalysis = OutputAnalysis(self.analysis)
-            # self.outputAnalysis.start()
-            # update state variable and buttons
-            self.analysis_running = True
-            self.btn_stop.setEnabled(True)
-            self._enableEdit(False)
+        # try:
+        # starting analysis
+        self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
+                                 corr_params=self.conn_params, OSC_params=[IP, port],
+                                 window_params=[float(window_size), None],  # baseline lag not implemented
+                                 norm_params=[float(norm_min), float(norm_max)])
+        self.analysis.start()
+        # update state variable and buttons
+        self.analysis_running = True
+        self.btn_stop.setEnabled(True)
+        self._enableEdit(False)
 
-        except Exception as e:
-            self.param_check.setText("Error message: " + str(e))
+        # except Exception as e:
+        #     self.param_check.setText("Error message: " + str(e))
 
     def _enableEdit(self, bool):
         self.btn_start.setEnabled(bool)
@@ -632,7 +622,6 @@ class Ui_MainWindow(object):
         self.analysis.stop()
         self.analysis_running = False
         self.discovery.stop()
-        # self.outputAnalysis.stop()
         self.btn_stop.setEnabled(False)
         self.btn_start.setEnabled(True)
         # set edit area editable
@@ -658,10 +647,23 @@ class Ui_MainWindow(object):
 if __name__ == "__main__":
     import sys
 
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    ui.setup()
-    MainWindow.show()
-    sys.exit(app.exec_())
+    # Back up the reference to the exceptionhook
+    sys._excepthook = sys.excepthook
+    def my_exception_hook(exctype, value, traceback):
+        # Print the error and traceback
+        print(exctype, value, traceback)
+        # Call the normal Exception hook after
+        sys._excepthook(exctype, value, traceback)
+        sys.exit(1)
+    # Set the exception hook to our wrapping function
+    sys.excepthook = my_exception_hook
+    try:
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
+        ui = Ui_MainWindow()
+        ui.setupUi(MainWindow)
+        ui.setup()
+        MainWindow.show()
+        sys.exit(app.exec_())
+    except Exception as e:
+        print(e)

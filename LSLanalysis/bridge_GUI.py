@@ -9,7 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import pyqtgraph as pg
+from pyqtgraph import PlotWidget
 
 class Ui_bridge_main(object):
     def setupUi(self, bridge_main):
@@ -81,7 +82,11 @@ class Ui_bridge_main(object):
         self.norm_methods.setTabText(self.norm_methods.indexOf(self.norm1), _translate("bridge_main", "Tab 1"))
         self.norm_methods.setTabText(self.norm_methods.indexOf(self.norm2), _translate("bridge_main", "Tab 2"))
         self.pushButton.setText(_translate("bridge_main", "display"))
-from pyqtgraph import PlotWidget
+    def setup(self):
+        # actions
+        self.pushButton.clicked.connect(self.display_btn)
+    def display_btn(self):
+        # pushButton function to display incoming stream (rvals)
 if __name__ == "__main__":
     import sys
 
@@ -91,4 +96,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
