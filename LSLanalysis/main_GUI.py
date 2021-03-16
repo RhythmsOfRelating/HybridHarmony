@@ -15,6 +15,7 @@ import numpy as np
 import logging.config
 import logging
 import sys, os
+from math import factorial
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -178,6 +179,18 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout_2 = QtWidgets.QGridLayout()
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.btn_loadStreams = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        self.btn_loadStreams.setFont(font)
+        self.btn_loadStreams.setToolTipDuration(7000)
+        self.btn_loadStreams.setObjectName("btn_loadStreams")
+        self.gridLayout_2.addWidget(self.btn_loadStreams, 1, 0, 1, 1)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem, 0, 0, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_2, 4, 0, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
@@ -187,15 +200,32 @@ class Ui_MainWindow(object):
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 0, 0, 1, 1)
-        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        self.label = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
-        self.label_5.setFont(font)
-        self.label_5.setObjectName("label_5")
-        self.gridLayout.addWidget(self.label_5, 0, 1, 1, 1)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 2, 1, 1, 1)
+        self.param_check = QtWidgets.QTextBrowser(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        font.setPointSize(7)
+        self.param_check.setFont(font)
+        self.param_check.setObjectName("param_check")
+        self.gridLayout.addWidget(self.param_check, 3, 1, 1, 1)
+        self.infoTable = QtWidgets.QTableWidget(self.centralwidget)
+        self.infoTable.setMinimumSize(QtCore.QSize(355, 192))
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.infoTable.setFont(font)
+        self.infoTable.setCornerButtonEnabled(True)
+        self.infoTable.setRowCount(0)
+        self.infoTable.setColumnCount(4)
+        self.infoTable.setObjectName("infoTable")
+        self.gridLayout.addWidget(self.infoTable, 3, 0, 1, 1)
         self.freqTable = QtWidgets.QTableWidget(self.centralwidget)
         self.freqTable.setMinimumSize(QtCore.QSize(355, 193))
         font = QtGui.QFont()
@@ -305,8 +335,8 @@ class Ui_MainWindow(object):
         self.label_wsize.setFont(font)
         self.label_wsize.setObjectName("label_wsize")
         self.params.addWidget(self.label_wsize, 4, 0, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(40, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.params.addItem(spacerItem, 5, 0, 1, 2)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.params.addItem(spacerItem1, 5, 0, 1, 2)
         self.label_oscIP = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
@@ -314,6 +344,28 @@ class Ui_MainWindow(object):
         self.label_oscIP.setObjectName("label_oscIP")
         self.params.addWidget(self.label_oscIP, 6, 0, 1, 1)
         self.gridLayout.addLayout(self.params, 1, 1, 1, 1)
+        self.gridLayout_3 = QtWidgets.QGridLayout()
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.btn_start = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        self.btn_start.setFont(font)
+        self.btn_start.setObjectName("btn_start")
+        self.gridLayout_3.addWidget(self.btn_start, 1, 0, 1, 1)
+        self.checkBox_osc = QtWidgets.QCheckBox(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        self.checkBox_osc.setFont(font)
+        self.checkBox_osc.setTristate(False)
+        self.checkBox_osc.setObjectName("checkBox_osc")
+        self.gridLayout_3.addWidget(self.checkBox_osc, 0, 0, 1, 1)
+        self.btn_stop = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        self.btn_stop.setFont(font)
+        self.btn_stop.setObjectName("btn_stop")
+        self.gridLayout_3.addWidget(self.btn_stop, 1, 1, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_3, 4, 1, 1, 1)
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
@@ -323,64 +375,15 @@ class Ui_MainWindow(object):
         self.label_4.setFont(font)
         self.label_4.setObjectName("label_4")
         self.gridLayout.addWidget(self.label_4, 2, 0, 1, 1)
-        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 2, 1, 1, 1)
-        self.infoTable = QtWidgets.QTableWidget(self.centralwidget)
-        self.infoTable.setMinimumSize(QtCore.QSize(355, 192))
-        font = QtGui.QFont()
-        font.setPointSize(8)
-        self.infoTable.setFont(font)
-        self.infoTable.setCornerButtonEnabled(True)
-        self.infoTable.setRowCount(0)
-        self.infoTable.setColumnCount(4)
-        self.infoTable.setObjectName("infoTable")
-        self.gridLayout.addWidget(self.infoTable, 3, 0, 1, 1)
-        self.param_check = QtWidgets.QTextBrowser(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        font.setPointSize(7)
-        self.param_check.setFont(font)
-        self.param_check.setObjectName("param_check")
-        self.gridLayout.addWidget(self.param_check, 3, 1, 1, 1)
-        self.btn_loadStreams = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        self.btn_loadStreams.setFont(font)
-        self.btn_loadStreams.setToolTipDuration(7000)
-        self.btn_loadStreams.setObjectName("btn_loadStreams")
-        self.gridLayout.addWidget(self.btn_loadStreams, 4, 0, 1, 1)
-        self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.checkBox_osc = QtWidgets.QCheckBox(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        self.checkBox_osc.setFont(font)
-        self.checkBox_osc.setTristate(False)
-        self.checkBox_osc.setObjectName("checkBox_osc")
-        self.verticalLayout.addWidget(self.checkBox_osc)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.btn_start = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        self.btn_start.setFont(font)
-        self.btn_start.setObjectName("btn_start")
-        self.horizontalLayout_3.addWidget(self.btn_start)
-        self.btn_stop = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        self.btn_stop.setFont(font)
-        self.btn_stop.setObjectName("btn_stop")
-        self.horizontalLayout_3.addWidget(self.btn_stop)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.gridLayout.addLayout(self.verticalLayout, 4, 1, 1, 1)
+        self.label_5.setFont(font)
+        self.label_5.setObjectName("label_5")
+        self.gridLayout.addWidget(self.label_5, 0, 1, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
@@ -413,8 +416,10 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "RhythmOfRelating"))
         MainWindow.setToolTip(_translate("MainWindow", "helphelphelp"))
+        self.btn_loadStreams.setToolTip(_translate("MainWindow", "detect LSL streams for analysis. Streams should be displayed on the table above."))
+        self.btn_loadStreams.setText(_translate("MainWindow", "1. load LSL streams"))
         self.label_3.setText(_translate("MainWindow", "Frequency bands for analysis"))
-        self.label_5.setText(_translate("MainWindow", "Parameters"))
+        self.label.setText(_translate("MainWindow", "Console"))
         self.comboBox_chn.setItemText(0, _translate("MainWindow", "one-to-one (e.g. Fp1 is only correlated with Fp1 and so on.)"))
         self.comboBox_chn.setItemText(1, _translate("MainWindow", "all-to-all (e.g. each channel is correlated with all the other available channels in the selection.)"))
         self.label_chn.setText(_translate("MainWindow", "Connectivity type"))
@@ -438,18 +443,17 @@ class Ui_MainWindow(object):
         self.lineEdit_oscCH.setText(_translate("MainWindow", "9000"))
         self.label_wsize.setText(_translate("MainWindow", "Window size (seconds)"))
         self.label_oscIP.setText(_translate("MainWindow", "OSC IP address (optional)"))
-        self.label_4.setText(_translate("MainWindow", "Input data streams"))
-        self.label.setText(_translate("MainWindow", "Console"))
-        self.btn_loadStreams.setToolTip(_translate("MainWindow", "detect LSL streams for analysis. Streams should be displayed on the table above."))
-        self.btn_loadStreams.setText(_translate("MainWindow", "1. load LSL streams"))
-        self.checkBox_osc.setText(_translate("MainWindow", "sending through OSC"))
         self.btn_start.setText(_translate("MainWindow", "2. start"))
+        self.checkBox_osc.setText(_translate("MainWindow", "sending through OSC"))
         self.btn_stop.setText(_translate("MainWindow", "stop"))
+        self.label_4.setText(_translate("MainWindow", "Input data streams"))
+        self.label_5.setText(_translate("MainWindow", "Parameters"))
         self.menusupport.setTitle(_translate("MainWindow", "support"))
         self.menufunctions.setTitle(_translate("MainWindow", "functions"))
         self.actiongenerate_random_data.setText(_translate("MainWindow", "play a random signal for testing"))
         self.actionplay_a_sample_recording_as_test_data.setText(_translate("MainWindow", "play a sample recording for testing"))
         self.actionbridge.setText(_translate("MainWindow", "bridge"))
+
 
     def setup(self):
         # log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
@@ -492,7 +496,7 @@ class Ui_MainWindow(object):
         self.infoTable.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.freqTable.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         # set label text
-        self.param_check.setText(self.param_check.text()+"\nUnlocked. Parameters are editable now.")
+        self.param_check.append("Parameters are editable now.\n")
 
     def _read_osc(self):
         """
@@ -578,7 +582,7 @@ class Ui_MainWindow(object):
                     ranges.append((int(self.freqTable.item(i, 1).text()), int(self.freqTable.item(i, 2).text())))
                     weights.append(float(self.freqTable.item(i, 3).text()))
                 except Exception as e:
-                    self.param_check.setText(self.param_check.text()+"\nFrequency table input type error.")
+                    self.param_check.append("Frequency table input type error.\n")
                     freqloaded = False
                     break
 
@@ -591,7 +595,7 @@ class Ui_MainWindow(object):
                     chns = self._str2list(self.infoTable.item(0, 3+j).text())
                     chn_list.append(chns)
                 except:
-                    self.param_check.setText(self.param_check.text()+"\nSelected channel format error.")
+                    self.param_check.append("Selected channel format error.\n")
                     infoloaded = False
                     break
 
@@ -601,12 +605,12 @@ class Ui_MainWindow(object):
             chnParams = dict(zip(freq_names, chn_list))
             weightParams = dict(zip(freq_names, weights))
         except:
-            self.param_check.setText(self.param_check.text()+"\nParameter format error")
+            self.param_check.append("Parameter format error.\n")
             infoloaded = False
 
         # if no error message, continue to lock buttons and read params into analysis
         if freqloaded and infoloaded:
-            self.param_check.setText(self.param_check.text()+"\nSuccessfully loaded parameters.")
+            self.param_check.append("Successfully loaded parameters.\n")
             self.conn_params = [freqParams, chnParams, weightParams]
             # grey out loading buttons
             self.btn_loadStreams.setEnabled(False)
@@ -629,28 +633,37 @@ class Ui_MainWindow(object):
 
     def fun_analyze(self):
         device, chn_type, mode, window_size, window_lag, norm_min, norm_max = self._read_input()
-        self.fun_retrieve_params()
         IP, port = self._read_osc()
-        # making sure there is input
-        if not self.discovery:
-            self.param_check.setText(self.param_check.text()+'\nPlease make sure EEG streams have been loaded first.')
+        # making sure first button was pressed
+        if not hasattr(self, 'discovery'):
+            self.param_check.append('Please make sure EEG streams have been loaded first.\n')
+        # making sure input is not empty
+        elif len(list(self.discovery.streams_by_uid.keys()))<1:
+            self.param_check.append('Please make sure EEG streams have been loaded first.\n')
         else:
-            try:
-                # starting analysis
-                self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
-                                         corr_params=self.conn_params, OSC_params=[IP, port],
-                                         window_params=[float(window_size), None],  # baseline lag not implemented
-                                         norm_params=[float(norm_min), float(norm_max)])
-                self.analysis.start()
-                self.param_check.setText(self.param_check.text()+"\nSending connectivity values...")
-                # update state variable and buttons
-                self.analysis_running = True
-                self.btn_stop.setEnabled(True)
-                self._enableEdit(False)
-            except Exception as e:
-                self.param_check.setText(self.param_check.text() + '\nError with analysis. The Error message is:'\
-                                         +'\n'+e)
+            self.fun_retrieve_params()
+            # proceed only if load stream button is locked
+            if not self.btn_loadStreams.isEnabled():
+                try:
+                    # starting analysis
+                    self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
+                                             corr_params=self.conn_params, OSC_params=[IP, port],
+                                             window_params=[float(window_size), None],  # baseline lag not implemented
+                                             norm_params=[float(norm_min), float(norm_max)])
+                    self.analysis.start()
+                    n_freq, n_ppl = len(self.conn_params[0]), self._factorial(len(list(self.discovery.streams_by_uid.keys())),2)
+                    self.param_check.append("Sending connectivity values for %s frequency bands and %s pairs...\n" % (n_freq,n_ppl))
+                    # update state variable and buttons
+                    self.analysis_running = True
+                    self.btn_stop.setEnabled(True)
+                    self._enableEdit(False)
+                except Exception as e:
+                    self.param_check.append('Error with analysis. The Error message is:'\
+                                             +'\n'+str(e)+'\n')
 
+    def _factorial(self, n, k):
+        # n choose k
+        return int(factorial(n) / factorial(k) / factorial(n - k))
 
     def _enableEdit(self, bool):
         self.btn_start.setEnabled(bool)
@@ -661,8 +674,6 @@ class Ui_MainWindow(object):
         self.lineEdit_wsize.setEnabled(bool)
         self.lineEdit_oscCH.setEnabled(bool)
         self.lineEdit_oscIP.setEnabled(bool)
-        self.lineEdit_normMin.setEnabled(bool)
-        self.lineEdit_normMax.setEnabled(bool)
 
     def fun_stop(self):
         # stop analysis
@@ -674,7 +685,8 @@ class Ui_MainWindow(object):
         self.btn_loadStreams.setEnabled(True)
         # set edit area editable
         self._enableEdit(True)
-        self.param_check.setText(self.param_check.text()+"\nAnalysis stopped.")
+        self.fun_unlock()
+        self.param_check.append("Analysis stopped.\n")
 
     def _str2list(self, text):
         """
