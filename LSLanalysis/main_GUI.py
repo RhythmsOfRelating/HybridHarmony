@@ -11,6 +11,7 @@ import logging.config
 import logging
 import os
 from math import factorial
+import os.path as path
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -461,10 +462,10 @@ class Ui_MainWindow(object):
         self.actionbridge.setText(_translate("MainWindow", "bridge"))
 
     def setup(self):
-        # log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
-        # log_path = path.join(log_path, 'logging.conf')
-        # logging.config.fileConfig(log_path)
-        logging.config.fileConfig(resource_path('log/logging.conf'))
+        log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
+        log_path = path.join(log_path, 'logging.conf')
+        logging.config.fileConfig(log_path)
+        # logging.config.fileConfig(resource_path('log/logging.conf'))
         # initialization
         self.conn_params = []
         self.analysis_running = False
