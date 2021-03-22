@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui.ui'
-#
-# Created by: PyQt5 UI code generator 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
-import sys, time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from acquisition import Discovery
 from analysis import Analysis
+from support import SampleGeneration
+from pyBridge import Ui_bridge_main, BridgeWindow
 import time
-from PyQt5.QtCore import QProcess
 import numpy as np
 import logging.config
 import logging
-import sys, os
+import os
 from math import factorial
 
 def resource_path(relative_path):
@@ -365,6 +360,12 @@ class Ui_MainWindow(object):
         self.btn_stop.setFont(font)
         self.btn_stop.setObjectName("btn_stop")
         self.gridLayout_3.addWidget(self.btn_stop, 1, 1, 1, 1)
+        self.checkBox_pow = QtWidgets.QCheckBox(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        self.checkBox_pow.setFont(font)
+        self.checkBox_pow.setObjectName("checkBox_pow")
+        self.gridLayout_3.addWidget(self.checkBox_pow, 0, 1, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_3, 4, 1, 1, 1)
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
@@ -398,6 +399,8 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actiongenerate_random_data = QtWidgets.QAction(MainWindow)
         self.actiongenerate_random_data.setObjectName("actiongenerate_random_data")
+        self.actionstop_generating = QtWidgets.QAction(MainWindow)
+        self.actionstop_generating.setObjectName("actionstop_generating")
         self.actionplay_a_sample_recording_as_test_data = QtWidgets.QAction(MainWindow)
         self.actionplay_a_sample_recording_as_test_data.setObjectName("actionplay_a_sample_recording_as_test_data")
         self.actionbridge = QtWidgets.QAction(MainWindow)
@@ -405,6 +408,7 @@ class Ui_MainWindow(object):
         self.menusupport.addSeparator()
         self.menusupport.addAction(self.actiongenerate_random_data)
         self.menusupport.addAction(self.actionplay_a_sample_recording_as_test_data)
+        self.menusupport.addAction(self.actionstop_generating)
         self.menufunctions.addAction(self.actionbridge)
         self.menubar.addAction(self.menusupport.menuAction())
         self.menubar.addAction(self.menufunctions.menuAction())
@@ -446,14 +450,15 @@ class Ui_MainWindow(object):
         self.btn_start.setText(_translate("MainWindow", "2. start"))
         self.checkBox_osc.setText(_translate("MainWindow", "sending through OSC"))
         self.btn_stop.setText(_translate("MainWindow", "stop"))
+        self.checkBox_pow.setText(_translate("MainWindow", "sending power values"))
         self.label_4.setText(_translate("MainWindow", "Input data streams"))
         self.label_5.setText(_translate("MainWindow", "Parameters"))
         self.menusupport.setTitle(_translate("MainWindow", "support"))
         self.menufunctions.setTitle(_translate("MainWindow", "functions"))
         self.actiongenerate_random_data.setText(_translate("MainWindow", "play a random signal for testing"))
         self.actionplay_a_sample_recording_as_test_data.setText(_translate("MainWindow", "play a sample recording for testing"))
+        self.actionstop_generating.setText(_translate("MainWindow", "Stop playing test signals"))
         self.actionbridge.setText(_translate("MainWindow", "bridge"))
-
 
     def setup(self):
         # log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
@@ -465,6 +470,9 @@ class Ui_MainWindow(object):
         self.analysis_running = False
         self.btn_stop.setEnabled(False)
         self.checkBox_osc.setChecked(True)
+        self.checkBox_pow.setChecked(False)
+        self.p = None
+        self.actionstop_generating.setVisible(False)
 
         # table content
         self.infoTable.setHorizontalHeaderLabels(['Stream ID', "channel count", 'sampling rate', 'theta', 'alpha', 'beta'])
@@ -482,7 +490,8 @@ class Ui_MainWindow(object):
         self.checkBox_osc.toggled.connect(self.lineEdit_oscIP.setEnabled)
         self.checkBox_osc.toggled.connect(self.lineEdit_oscCH.setEnabled)
         self.actiongenerate_random_data.triggered.connect(self._run_generate_random_samples)
-
+        self.actionstop_generating.triggered.connect(self._stop_generating)
+        self.actionbridge.triggered.connect(self.open_bridge)
     def fun_unlock(self):
         """
         button unlock
@@ -511,10 +520,20 @@ class Ui_MainWindow(object):
         return IP, port
 
     def _run_generate_random_samples(self):
-        # generate_random_samples()
-        filepath = resource_path('support/fun_generate_random_samples.py')
-        QProcess.startDetached(filepath)
-    #TODO
+        self.run_samples = SampleGeneration('None')  # TODO mode
+        self.run_samples.start()
+        self.actiongenerate_random_data.setEnabled(False)  # gray out the button
+        self.actionplay_a_sample_recording_as_test_data.setEnabled(False)
+        self.actionstop_generating.setVisible(True)
+        self.param_check.append('Sending random samples for testing...')
+
+    def _stop_generating(self):
+        self.run_samples.stop()
+        self.actiongenerate_random_data.setEnabled(True)
+        self.actionplay_a_sample_recording_as_test_data.setEnabled(True)
+        self.actionstop_generating.setVisible(False)
+        self.param_check.append('Stopped sending samples.')
+
     def fun_load_streams(self):
         """
         button 2. Scan for LSL streams
@@ -648,6 +667,7 @@ class Ui_MainWindow(object):
                     # starting analysis
                     self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
                                              corr_params=self.conn_params, OSC_params=[IP, port],
+                                             compute_pow=self.checkBox_pow.isChecked(),
                                              window_params=[float(window_size), None],  # baseline lag not implemented
                                              norm_params=[float(norm_min), float(norm_max)])
                     self.analysis.start()
@@ -703,6 +723,11 @@ class Ui_MainWindow(object):
         ind = list(dict.fromkeys(ind))  # remove duplicates
         ind.sort()  # sort
         return ind
+
+    def open_bridge(self):
+        self.bridge = BridgeWindow()
+        self.bridge.show()
+
 
 if __name__ == "__main__":
     import sys

@@ -5,7 +5,7 @@ from .buffer import Buffer
 from .correlation_perFreq import Correlation
 
 class Analysis:
-  def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, window_params, norm_params):
+  def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, compute_pow, window_params, norm_params):
     self.logger = logging.getLogger(__name__)
     self.discovery = discovery
     self.mode = mode
@@ -13,6 +13,7 @@ class Analysis:
     self.corr_params = corr_params
     self.buffer = Buffer(discovery)
     self.OSC_params = OSC_params
+    self.compute_pow = compute_pow
     self.window_size, self.window_lag = window_params[0], window_params[1]
     self.norm_params = norm_params
     self.thread = None
@@ -43,6 +44,7 @@ class Analysis:
       chn_type=self.chn_type,
       corr_params=self.corr_params,
       OSC_params=self.OSC_params,
+      compute_pow=self.compute_pow,
       norm_params=self.norm_params)
 
     return True
