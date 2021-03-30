@@ -55,7 +55,8 @@ class Normalization:
         self.sample_size = len(self.buffers.values())
         if self.sample_size == 0:
             return
-        
+        # TODO
+        self.sample_size = 3
         info = StreamInfo('NormValues', 'Markers', self.sample_size, IRREGULAR_RATE, cf_float32, "RValues-{}".format(getpid()))
         info.desc().append_child_value("NormCorrelation", "R")
         
@@ -80,9 +81,16 @@ class Normalization:
             # self.logger.warning('trailing timestamp %s, last calculation %s' % (trailing_timestamp, LAST_CALCULATION))
 
             LAST_CALCULATION = trailing_timestamp
-            analysis_window = self._select_analysis_window(trailing_timestamp)
-            all_analytic = np.array(list(analysis_window.values())).reshape(
-                (len(analysis_window), 3, -1))
+            # analysis_window = self._select_analysis_window(trailing_timestamp)
+            # all_analytic = np.array(list(analysis_window.values())).reshape(
+            #     (len(analysis_window), 3, -1))
+
+            # TODO
+            rvalues = [1,2,3]
+            if self.OUTLET:
+                self.logger.warning("Sending {} norm values with timestamp {}".format(len(rvalues), trailing_timestamp))
+                self.logger.warning(str(rvalues))
+                self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
 
             # # sending OSC packets
             # if self.OSC_params[0] is not None:  # if sending OSC
@@ -93,7 +101,6 @@ class Normalization:
         else:
             self.logger.debug("Still waiting for new data to arrive, skipping analysis")
             return
-        return all_analytic
 
     def _clamp(self, n):
         return max(min(1, n), 0)

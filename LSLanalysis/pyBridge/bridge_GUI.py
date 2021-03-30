@@ -11,8 +11,8 @@ from .paintwidget import PaintWidget
 from .acquisition import Discovery
 from .analysis import Analysis
 import time
-import pyqtgraph as pg
-from pyqtgraph import PlotWidget
+# import pyqtgraph as pg
+# from pyqtgraph import PlotWidget
 class BridgeWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(BridgeWindow, self).__init__(*args, **kwargs)
@@ -27,7 +27,7 @@ class BridgeWindow(QtWidgets.QMainWindow):
         self.norm = Analysis(discovery=self.discovery, mode=None, OSC_params=None,
                              weight=None, manual_params=None, auto_params=None)
         self.norm.start()
-        self.ui.console.append(str(self.norm.mess))
+        # self.ui.console.append(str(self.norm.mess))
 
     def fun_load_streams(self):
         """

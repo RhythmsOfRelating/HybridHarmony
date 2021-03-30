@@ -66,10 +66,9 @@ class Analysis:
     while self.running:
       try:
         self.buffer.pull()
-        if len(self.buffer.buffers_by_uid) == 0:
-          return
-        output = self.norm.run()
-        return output
+        # if len(self.buffer.buffers_by_uid) == 0:
+        #   return
+        self.norm.run()
       except Exception as e:
         self.logger.warning("Error during analysis, skipped frame")
         self.logger.exception(e)
