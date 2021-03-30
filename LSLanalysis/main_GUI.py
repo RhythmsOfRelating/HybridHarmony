@@ -419,15 +419,14 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "RhythmOfRelating"))
-        MainWindow.setToolTip(_translate("MainWindow", "helphelphelp"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HybridHarmony"))
+        # MainWindow.setToolTip(_translate("MainWindow", "helphelphelp"))
         self.btn_loadStreams.setToolTip(_translate("MainWindow", "detect LSL streams for analysis. Streams should be displayed on the table above."))
         self.btn_loadStreams.setText(_translate("MainWindow", "1. load LSL streams"))
         self.label_3.setText(_translate("MainWindow", "Frequency bands for analysis"))
         self.label.setText(_translate("MainWindow", "Console"))
         self.comboBox_chn.setItemText(0, _translate("MainWindow", "one-to-one (e.g. Fp1 is only correlated with Fp1 and so on.)"))
         self.comboBox_chn.setItemText(1, _translate("MainWindow", "all-to-all (e.g. each channel is correlated with all the other available channels in the selection.)"))
-        self.label_chn.setText(_translate("MainWindow", "Connectivity type"))
         self.comboBox_device.setItemText(0, _translate("MainWindow", "MUSE"))
         self.comboBox_device.setItemText(1, _translate("MainWindow", "EMOTIV EPOC"))
         self.comboBox_device.setItemText(2, _translate("MainWindow", "EMOTIV EPOC+"))
