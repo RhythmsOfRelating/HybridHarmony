@@ -490,8 +490,11 @@ class Ui_MainWindow(object):
         self.checkBox_osc.toggled.connect(self.lineEdit_oscIP.setEnabled)
         self.checkBox_osc.toggled.connect(self.lineEdit_oscCH.setEnabled)
         self.actiongenerate_random_data.triggered.connect(self._run_generate_random_samples)
+        self.actionplay_a_sample_recording_as_test_data.triggered.connect(self._run_generate_xdf_samples)
         self.actionstop_generating.triggered.connect(self._stop_generating)
         self.actionbridge.triggered.connect(self.open_bridge)
+        self.actionbridge.setEnabled(False)
+
     def fun_unlock(self):
         """
         button unlock
@@ -520,12 +523,20 @@ class Ui_MainWindow(object):
         return IP, port
 
     def _run_generate_random_samples(self):
-        self.run_samples = SampleGeneration('None')  # TODO mode
+        self.run_samples = SampleGeneration('random')
         self.run_samples.start()
         self.actiongenerate_random_data.setEnabled(False)  # gray out the button
         self.actionplay_a_sample_recording_as_test_data.setEnabled(False)
         self.actionstop_generating.setVisible(True)
         self.param_check.append('Sending random samples for testing...')
+
+    def _run_generate_xdf_samples(self):
+        self.run_samples = SampleGeneration('sample')
+        self.run_samples.start()
+        self.actiongenerate_random_data.setEnabled(False)  # gray out the button
+        self.actionplay_a_sample_recording_as_test_data.setEnabled(False)
+        self.actionstop_generating.setVisible(True)
+        self.param_check.append('Sending a sample recording for testing...')
 
     def _stop_generating(self):
         self.run_samples.stop()
