@@ -433,6 +433,7 @@ class Ui_MainWindow(object):
         self.comboBox_device.setItemText(3, _translate("MainWindow", "Enobio"))
         self.label_input.setText(_translate("MainWindow", "Input type"))
         self.label_conn.setText(_translate("MainWindow", "Connectivity metric"))
+        self.label_chn.setText(_translate("MainWindow", "Connectivity type"))
         self.lineEdit_wsize.setText(_translate("MainWindow", "3"))
         self.label_device.setText(_translate("MainWindow", "Device"))
         self.comboBox_conn.setItemText(0, _translate("MainWindow", "Coherence"))
