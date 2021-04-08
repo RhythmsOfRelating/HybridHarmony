@@ -1,35 +1,26 @@
-# LSL Real Time analysis
+# Hybrid Harmony (LSLanalysis)
+## Setup
+Please refer to [the main page](https://github.com/RhythmsOfRelating/RhythmsOfRelating) for setup instructions.
 
-## Requirements
-- Python 3.7
+## Starting a dummy session with random data
+1. Open `support` from the menu bar, and click `play a random signal for testing`
+![randomdata][img1]
 
-## Set up
+[img1]: https://github.com/RhythmsOfRelating/RhythmsOfRelating/blob/master/tutorial/tutorial2.png "randomdata"
 
-This project uses 
-- [`pip3`](https://docs.pipenv.org/) to manage Python dependencies.
+The `Console` will display the following:
+![randomdata2][img2]
 
-Steps to set it up `LSL analysis`:
-1. When using git: Clone the repository.
-2. Open Terminal an go to `LSL analysis` directory, and run
-```
-pip3 install -r requirements.txt
-```
+[img2]: https://github.com/RhythmsOfRelating/RhythmsOfRelating/blob/master/tutorial/tutorial3.png "randomdata2"
 
-### Starting a dummy session with random data
+2. Click the button `1. load LSL streams` to discover and display the two random streams:
+![randomdata3][img3]
 
-1. Start generating random LSL streams
-```
-python support/generate_random_samples.py
-```
-or start generating sample data streams
-```
-python support/generate_xdf_samples.py
-```
-2. In another terminal session`, start the analysis
-```
-python main_GUI.py
-```
-3. To debug the logs you can check `log/development.log` in another session
-```
-tail -f ./log/development.log
-```
+[img3]: https://github.com/RhythmsOfRelating/RhythmsOfRelating/blob/master/tutorial/tutorial4.png "randomdata3"
+
+3. Modify the parameters.
+
+5. Click the button `2. start` to start the analysis.
+![randomdata4][img4]
+
+[img4]: https://github.com/RhythmsOfRelating/RhythmsOfRelating/blob/master/tutorial/tutorial5.png "randomdata4"
