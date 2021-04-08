@@ -22,7 +22,7 @@
 ```shell
 $ git clone https://github.com/RhythmsOfRelating/RhythmsOfRelating.git
 ```
-3. Open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
+3. After downloading Python, open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
 ```shell
 $ pip install pipenv
 ```
