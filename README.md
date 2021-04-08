@@ -1,3 +1,4 @@
+# Overview
 **HybridHarmony** is a a Brain-Computer Interface (BCI) application that supports the simultaneous recording of multiple (neurophysiological) datastreams and the real-time visualization and sonification of inter-brain synchrony.
 
 - The main application is in folder [LSLanalysis](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/LSLanalysis), consisting of a backend that handles data and performs analyses, and a Graphical User Interface (GUI) made with PyQt5.
@@ -18,7 +19,10 @@
 - For Mac users and developers, refer to the following steps:
 
 1. When using git: Clone the repository.
-2. Open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
+```shell
+$ git clone https://github.com/RhythmsOfRelating/RhythmsOfRelating.git
+```
+3. Open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
 ```shell
 $ pip install pipenv
 ```
@@ -45,7 +49,7 @@ $ python main_GUI.py
 
 ### Visualization Module (Mutual Brainwaves Lab)
 - For Mac users, download the release [Mutual Brainwaves Lab](https://github.com/RhythmsOfRelating/RhythmsOfRelating/releases/tag/v0.1-viz). The `.zip` file contains two applications: Mutual Brainwaves Lab Visuals and Mutual Brainwaves Lab Bridge.
-- For Windows users, a working version is still under development.
+- For Windows users, the two applications can be built from the source code [here](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Visuals) and [here](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Bridge). We will release a Python-based Mutual Brainwaves Lab soon to enable better compatibility with Windows system.
 
 
 
