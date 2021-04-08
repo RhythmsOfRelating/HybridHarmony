@@ -1,5 +1,5 @@
 # Overview
-**HybridHarmony** is a a Brain-Computer Interface (BCI) application that supports the simultaneous recording of multiple (neurophysiological) datastreams and the real-time visualization and sonification of inter-brain synchrony.
+**Hybrid Harmony** is a a Brain-Computer Interface (BCI) application that supports the simultaneous recording of multiple (neurophysiological) datastreams and the real-time visualization and sonification of inter-brain synchrony.
 
 - The main application is in folder [LSLanalysis](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/LSLanalysis), consisting of a backend that handles data and performs analyses, and a Graphical User Interface (GUI) made with PyQt5.
 - The visualization module is in folder [Mutual Brainwaves Lab Visuals](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Visuals) and [Mutual Brainwaves Lab Bridge](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Bridge)
