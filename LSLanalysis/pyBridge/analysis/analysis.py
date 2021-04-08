@@ -1,34 +1,39 @@
 import logging
+from queue import Queue
 from threading import current_thread, Thread
 from collections import deque
 from .buffer import Buffer
-from .correlation_perFreq import Correlation
+from .normalization import Normalization
 
 class Analysis:
-  def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, compute_pow, window_params, norm_params):
+  def __init__(self, discovery, mode, OSC_params, weight, manual_params, auto_params):
     self.logger = logging.getLogger(__name__)
-    self.discovery = discovery
-    self.mode = mode
-    self.chn_type = chn_type
-    self.corr_params = corr_params
-    self.buffer = Buffer(discovery)
-    self.OSC_params = OSC_params
-    self.compute_pow = compute_pow
-    self.window_size, self.window_lag = window_params[0], window_params[1]
-    self.norm_params = norm_params
     self.thread = None
     self.running = False
-    self.corr = None
+    self.norm = None
+
+    self.discovery = discovery
+    self.mode = mode
+    self.buffer = Buffer(discovery)
+    self.OSC_params = OSC_params
+    self.weight = weight
+    self.manual_params = manual_params
+    self.auto_params = auto_params
+
+    self.mess = None
 
   def start(self):
     if self.thread:
       return False
-
-    self.thread = Thread(target=self._update, daemon=True, name="Buffering")
+    # start the thread
+    # TODO
+    # self.que = Queue()
+    # self.thread = Thread(target=lambda self.que, arg1: self.que.put(self._update(arg1)), args=(self.que), daemon=True,name='Norm')
+    self.thread = Thread(target=self._update, daemon=True, name="Norm")
     self.running = True
     self.thread.start()
 
-    # create correlation object
+    # create normalization object
     sample_rate = self.discovery.sample_rate
     channel_count = self.discovery.channel_count
     # Make sure we're still connected and have a sample rate
@@ -36,16 +41,13 @@ class Analysis:
       self.logger.warning('connection broken.')
       return
 
-    self.corr = Correlation(
-      sample_rate=sample_rate,
-      channel_count=channel_count,
+    self.norm = Normalization(
       buffers=self.buffer.buffers_by_uid,
       mode=self.mode,
-      chn_type=self.chn_type,
-      corr_params=self.corr_params,
       OSC_params=self.OSC_params,
-      compute_pow=self.compute_pow,
-      norm_params=self.norm_params)
+      weight=self.weight,
+      manual_params=self.manual_params,
+      auto_params=self.auto_params)
 
     return True
 
@@ -64,13 +66,9 @@ class Analysis:
     while self.running:
       try:
         self.buffer.pull()
-        self._calculate()
+        # if len(self.buffer.buffers_by_uid) == 0:
+        #   return
+        self.norm.run()
       except Exception as e:
         self.logger.warning("Error during analysis, skipped frame")
         self.logger.exception(e)
-
-  def _calculate(self):
-    # Make sure we have buffers to analyze
-    if len(self.buffer.buffers_by_uid) == 0:
-      return
-    self.corr.run()

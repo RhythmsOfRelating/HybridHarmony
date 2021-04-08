@@ -23,7 +23,7 @@ ORDER = 5
 
 class Correlation:
 
-    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, norm_params):
+    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params):
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
         self.sample_size = int(sample_rate * WINDOW)
@@ -31,6 +31,7 @@ class Correlation:
         self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
+        self.compute_pow = compute_pow
         self.norm_params = norm_params
         self.mode = mode
         self.chn_type = chn_type
@@ -40,19 +41,6 @@ class Correlation:
         if OSC_params[0] is not None:
             self._setup_OSC()
 
-
-    # def _changed_since_last_run(self):
-    #     if CHANNEL_COUNT != self.channel_count:
-    #         return True
-    #
-    #     if SAMPLE_RATE != self.sample_rate:
-    #         return True
-    #
-    #     if STREAM_COUNT != len(self.buffers):
-    #         return True
-    #
-    #     return False
-    #
     def _setup(self):
         # moving global variables to class parameters
         self.STREAM_COUNT = len(self.buffers)
@@ -62,7 +50,8 @@ class Correlation:
         self.HANN = self._setup_hann()
         self.CONNECTIONS = self._setup_num_connections()
         self.OUTLET = self._setup_outlet()
-        self.OUTLET_POWER = self._setup_outlet_power()
+        if self.compute_pow:
+            self.OUTLET_POWER = self._setup_outlet_power()
 
         self.logger.warning('setup '+str(self.CONNECTIONS)+str(len(self.buffers)))
 
@@ -147,12 +136,13 @@ class Correlation:
 
             LAST_CALCULATION = trailing_timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp)
-            self._apply_window_weights(analysis_window)
+            analysis_window = self._apply_window_weights(analysis_window)
 
             analytic_matrix = self._calculate_all(analysis_window)
             rvalues = self._calculate_rvalues(analytic_matrix, self.mode)
-            power_values = self._calculate_power(analytic_matrix)
-
+            if self.compute_pow:
+                power_values = self._calculate_power(analytic_matrix)
+                self.OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
             # minmax normalization
             if self.norm_params[0] is not None:
                 rvalues = [self._clamp((r - self.norm_params[0]) / (self.norm_params[1]-self.norm_params[0])) for r in rvalues]
@@ -161,8 +151,7 @@ class Correlation:
             if self.OUTLET:
                 self.logger.warning("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
                 self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
-            if self.OUTLET_POWER:
-                self.OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
+
             # sending OSC packets
             if self.OSC_params[0] is not None:  # if sending OSC
                 sample_size = self.CONNECTIONS * len(self.freqParams)
@@ -180,6 +169,7 @@ class Correlation:
         for uid in analysis_window.keys():
             analysis_window[uid] = np.multiply(analysis_window[uid], self.HANN[:, None])
         self.logger.debug("Applying window weights with %s samples and %s channels." % analysis_window[uid].shape)
+        return analysis_window
 
     def _calculate_power(self, analytic_matrix):
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
@@ -306,7 +296,7 @@ class Correlation:
                       if a[0] < a[1]]
         rvals = []
         for pair in pair_index:
-            con = self.compute_sync(analytic_matrix[:, pair, :, :], mode)
+            con = np.abs(self.compute_sync(analytic_matrix[:, pair, :, :], mode))  # take the absolute value for envelope and pow corr and ccorr
             # the connectivity matrix for the current pair. shape is (n_freq, n_ch, n_ch)
             con = con[:, 0:self.channel_count, self.channel_count:]
             if 'all-to-all' in self.chn_type:  # all to all correlation
