@@ -16,7 +16,7 @@
 
 - For Windows users, download the latest release and run the executable file titled `HybridHarmony vx.x.exe`. Here is [v1.0](https://github.com/RhythmsOfRelating/RhythmsOfRelating/releases/tag/v1.0).
 
-- For Mac users and developers, refer to the following steps:
+- For developers and Mac users, refer to the following steps:
 
 1. When using git: Clone the repository.
 ```shell
