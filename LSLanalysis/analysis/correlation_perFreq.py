@@ -23,7 +23,8 @@ ORDER = 5
 
 class Correlation:
 
-    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params):
+    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
+                 COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
         self.sample_size = int(sample_rate * WINDOW)
@@ -32,12 +33,19 @@ class Correlation:
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
         self.compute_pow = compute_pow
-        self.norm_params = norm_params
+        self.norm_min, self.norm_max = norm_params
         self.mode = mode
         self.chn_type = chn_type
-        self.rvalues = None
         self.timestamp = None
         self._setup()
+
+        # read setup tools
+        self.COEFFICIENTS = COEFFICIENTS
+        self.HANN = HANN
+        self.CONNECTIONS = CONNECTIONS
+        self.OUTLET = OUTLET
+        if self.compute_pow:
+            self.OUTLET_POWER = OUTLET_POWER
         if OSC_params[0] is not None:
             self._setup_OSC()
 
@@ -46,14 +54,6 @@ class Correlation:
         self.STREAM_COUNT = len(self.buffers)
         self.SAMPLE_RATE = self.sample_rate
         self.CHANNEL_COUNT = self.channel_count
-        self.COEFFICIENTS = self._setup_coefficients()
-        self.HANN = self._setup_hann()
-        self.CONNECTIONS = self._setup_num_connections()
-        self.OUTLET = self._setup_outlet()
-        if self.compute_pow:
-            self.OUTLET_POWER = self._setup_outlet_power()
-
-        self.logger.warning('setup '+str(self.CONNECTIONS)+str(len(self.buffers)))
 
     def _setup_OSC(self):
         # reading params
@@ -72,61 +72,6 @@ class Correlation:
         msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
         osc_send(msg, 'Rvalues')
 
-    def _setup_outlet(self):
-        sample_size = self.CONNECTIONS * len(self.freqParams)
-        if sample_size == 0:
-            return
-        
-        info = StreamInfo('RValues', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "RValues-{}".format(getpid()))
-        info.desc().append_child_value("correlation", "R")
-        
-        mappings = info.desc().append_child("mappings")
-        buffer_keys = list(self.buffers.keys())
-        pair_index = [a for a in
-                      list(product(np.arange(0, len(buffer_keys)), np.arange(0, len(buffer_keys))))
-                      if a[0] < a[1]]
-
-        for pair in pair_index:
-            mappings.append_child("mapping") \
-                .append_child_value("from", buffer_keys[pair[0]]) \
-                .append_child_value("to", buffer_keys[pair[1]])
-
-        return StreamOutlet(info)
-
-    # phoebe edit
-    def _setup_outlet_power(self):
-        sample_size =  self.STREAM_COUNT * self.channel_count * len(self.freqParams)
-        self.logger.warning('power sample size is %s %s %s' % (self.STREAM_COUNT, self.channel_count, len(self.freqParams)) )
-        if sample_size == 0:
-            return
-        info = StreamInfo('Powervals', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "Pvals-{}".format(getpid()))
-        info.desc().append_child_value('subjects', '_'.join(list(self.buffers.keys())))
-        return StreamOutlet(info)
-
-    def _setup_coefficients(self):
-        nyq = 0.5 * self.sample_rate
-        min_band = 0.0 + 1.0e-10
-        max_band = 1.0 - 1.0e-10
-        coefficients = []
-        for band in self.freqParams.values():
-            low_band = max(min_band, min(max_band, band[0] / nyq))
-            high_band = max(min_band, min(max_band, band[1] / nyq))
-            low, high = butter(ORDER, [low_band, high_band], btype='band')
-            coefficients.append([low, high])
-        
-        return coefficients
-
-    def _setup_hann(self):
-        denom = self.sample_size - 1
-        hann = []
-        for n in range(self.sample_size):
-            hann.append(.5 * (1 - np.cos((2 * np.pi * n) / denom)))
-        
-        return np.array(hann)
-
-    def _setup_num_connections(self):
-        return sum(list(range(1, len(self.buffers))))
-
     def run(self):
         global LAST_CALCULATION
         trailing_timestamp = self._find_trailing_timestamp()
@@ -143,21 +88,19 @@ class Correlation:
             if self.compute_pow:
                 power_values = self._calculate_power(analytic_matrix)
                 self.OUTLET_POWER.push_sample(power_values, timestamp=trailing_timestamp)
-            # minmax normalization
-            if self.norm_params[0] is not None:
-                rvalues = [self._clamp((r - self.norm_params[0]) / (self.norm_params[1]-self.norm_params[0])) for r in rvalues]
+
             # sending LSL packets
-            # self.logger.warning(str(self.OUTLET))
             if self.OUTLET:
                 self.logger.warning("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
                 self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
-
+                # self.logger.warning('rvals='+str(rvalues))
             # sending OSC packets
             if self.OSC_params[0] is not None:  # if sending OSC
                 sample_size = self.CONNECTIONS * len(self.freqParams)
                 msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, rvalues)
                 osc_send(msg, 'Rvalues')
                 osc_process()
+            return rvalues
         else:
             self.logger.debug("Still waiting for new data to arrive, skipping analysis")
             return
@@ -208,7 +151,6 @@ class Correlation:
 
     def _calculate_all(self, analysis_window):
         all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
-
         all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(self.COEFFICIENTS)])
 
         return all_analytic
@@ -305,10 +247,11 @@ class Correlation:
             else:  # channel to channel correlation
                 result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]])
                           for i, freq in enumerate(self.freqParams.keys())]
-
             # adjust result according to weight parameters
+            # making sure the sum is 1
             weights = list(self.weightParams.values())
-            result = [r*weight/sum(weights) for r, weight in zip(result, weights)]
+            result = [r*weight for r, weight in zip(result, weights)]
+            result = [self._clamp((r-minn)/(maxx-minn)) for r, minn, maxx in zip(result, self.norm_min, self.norm_max)]
             rvals.extend(result)
 
         return rvals  # a list of length n_connections * n_freq
