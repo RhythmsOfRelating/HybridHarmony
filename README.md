@@ -22,10 +22,31 @@
 ```shell
 $ git clone https://github.com/RhythmsOfRelating/HybridHarmony.git
 ```
-3. After downloading Python, open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
+2. (Old)After downloading Python3.x, open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
 ```shell
 $ pip install pipenv
 ```
+(New) If you have multiple versions of Python installed, the version needs to be specified so the OS knows the right  version of `pip` to use. For example if you want to use Python3.7 use:
+```shell
+$ python37 -m pip install %package_name%
+```
+This command works also if you have only one version of Python, in that case there is no need to specify the version:
+```shell
+$ python -m pip install %package_name%
+```
+In addition, it is recommended to use `pipx` to install Python libraries in a clean and isolated environment:
+```shell
+$ python -m pip install --user pipx
+```
+Using `pipx` you can install `pipenv` with the command:
+```shell
+$ python -m pipx install pipenv
+```
+(Optional) If your shell is not able to find `pipenv` it means that the executable has not been added to your PATH variable. To add it you can do it manually using the standard procedure recommended for your OS (Windows, MacOS or Linux), otherwise you can run the following program to let `pipx` handle it for you. Note that this will add all the executable of the specified version of `pipx` to the PATH variable, and if you want to remove them you will need to do so manually:
+```shell
+$ python -m pipx ensurepath
+```
+
 3. Inside the `LSLanalysis` directory, install the dependencies:
 ```shell
 $ pipenv install
