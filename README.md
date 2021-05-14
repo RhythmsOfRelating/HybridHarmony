@@ -26,7 +26,7 @@ $ git clone https://github.com/RhythmsOfRelating/HybridHarmony.git
 ```shell
 $ pip install pipenv
 ```
-(New) If you have multiple versions of Python installed, the version needs to be specified so the OS knows the right  version of `pip` to use. For example if you want to use Python3.7 use:
+2.1 (New) If you have multiple versions of Python installed, the version needs to be specified so the OS knows the right  version of `pip` to use. For example, if you want to use Python3.7 run:
 ```shell
 $ python37 -m pip install %package_name%
 ```
@@ -42,7 +42,7 @@ Using `pipx` you can install `pipenv` with the command:
 ```shell
 $ python -m pipx install pipenv
 ```
-(Optional) If your shell is not able to find `pipenv` it means that the executable has not been added to your PATH variable. To add it you can do it manually using the standard procedure recommended for your OS (Windows, MacOS or Linux), otherwise you can run the following program to let `pipx` handle it for you. Note that this will add all the executable of the specified version of `pipx` to the PATH variable, and if you want to remove them you will need to do so manually:
+(Optional) If your shell is not able to find `pipenv` it means that the executable has not been added to your PATH variable. To add it you can do it manually using the standard procedure recommended for your OS (Windows, MacOS or Linux), otherwise you can run the following command to let `pipx` handle it for you. NOTE: this will add all the executables contained in the storage of the called version of `pipx` to the PATH variable, if you want to remove them you will need to do so manually:
 ```shell
 $ python -m pipx ensurepath
 ```
