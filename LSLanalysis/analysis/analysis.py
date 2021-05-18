@@ -1,6 +1,8 @@
+"""
+Analysis module performing connectivity analysis
+"""
 import logging
 from threading import current_thread, Thread
-from collections import deque
 from os import getpid
 from .buffer import Buffer
 from .correlation_perFreq import Correlation
@@ -8,15 +10,34 @@ from multiprocessing import Queue
 from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_float32
 from scipy.signal import butter
 from itertools import product
-from osc4py3.as_allthreads import *
-from osc4py3 import oscbuildparse
-from osc4py3 import oscchannel as osch
 import numpy as np
 ORDER = 5
 WINDOW = 3
 
 class Analysis:
   def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, compute_pow, window_params, norm_params):
+    """
+    Class performing connectivity analysis
+    :param discovery: Discovery object for retrieving incoming data chunks
+    :param mode: connectivity analysis mode. Refer to notes for supported modes
+    :param chn_type: compute all electrode pairs if 'all-to-all';
+                      alternatively, compute only corresponding electrode pairs if 'one-to-one'
+    :param corr_params: a list of three lists: frequency parameters, channel parameters, weight parameters
+    :param OSC_params: OSC parameters for OSC transmission
+    :param compute_pow: boolean variable determining whether to compute and transmit power values
+    :param window_params: (deprecated) analysis window size
+    :param norm_params: a list of two. min and max values for MinMax normalization
+
+    Note:
+      **supported connectivity measures**
+          - 'envelope correlation': envelope correlation
+          - 'power correlation': power correlation
+          - 'plv': phase locking value
+          - 'ccorr': circular correlation coefficient
+          - 'coherence': coherence
+          - 'imaginary coherence': imaginary coherence
+    """
+    # setting up parameters
     self.logger = logging.getLogger(__name__)
     self.discovery = discovery
     self.mode = mode
@@ -33,21 +54,24 @@ class Analysis:
     self.corr = None
     self.que = Queue(maxsize=1000)
 
-    self.buffer.pull()  # initial pull in order to setup connections
+    self.buffer.pull()  # pull data (once) in order to set up the following information
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
-    self.sample_size = int(self.sample_rate * WINDOW)
-    self.STREAM_COUNT = len(self.buffer.buffers_by_uid)
-    self.COEFFICIENTS = self._setup_coefficients()
-    self.HANN = self._setup_hann()
-    self.CONNECTIONS = self._setup_num_connections()
-    self.OUTLET = self._setup_outlet()
-    if self.compute_pow:
+    self.sample_size = int(self.sample_rate * WINDOW)  # number of samples in the analysis window
+    self.STREAM_COUNT = len(self.buffer.buffers_by_uid)  # number of streams
+    self.COEFFICIENTS = self._setup_coefficients()  # band-pass filtering coefficients
+    self.HANN = self._setup_hann()  # Hanning window coefficients
+    self.CONNECTIONS = self._setup_num_connections()  # number of connections
+    self.OUTLET = self._setup_outlet()  # connectivity value outlet
+    if self.compute_pow:  # if sending power values, then set up power value outlet
       self.OUTLET_POWER = self._setup_outlet_power()
     else:
       self.OUTLET_POWER = None
 
   def start(self):
+    """
+    Start thread for analysis, while saving the output of self._update to the que parameter
+    """
     if self.thread:
       return False
     self.thread = Thread(
@@ -64,6 +88,9 @@ class Analysis:
     return True
 
   def stop(self):
+    """
+    Stop the analysis
+    """
     if not self.thread:
       return True
 
@@ -75,6 +102,10 @@ class Analysis:
     return True
 
   def _update(self, que):
+    """
+    Continuously pull data samples and perform connectivity analysis, and then save the result to que
+    :param que: Queue object to save connectivity values
+    """
     while self.running:
       try:
         self.buffer.pull()
@@ -85,8 +116,10 @@ class Analysis:
         self.logger.warning("Error during analysis, skipped frame "+str(e))
         self.logger.exception(e)
 
-
   def _calculate(self):
+    """
+    compute connectivity values by calling the Correlation object
+    """
     # Make sure we have buffers to analyze
     if len(self.buffer.buffers_by_uid) == 0:
       return
@@ -115,21 +148,24 @@ class Analysis:
     return r
 
   # helper functions to set up
-
   def _setup_outlet(self):
+    """
+    Setting up LSL outlet for connectivity values
+    :return: StreamOutlet object
+    """
     sample_size = self.CONNECTIONS * len(self.freqParams)
     if sample_size == 0:
       return
 
+    # basic info
     info = StreamInfo('RValues', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "RValues-{}".format(getpid()))
     info.desc().append_child_value("correlation", "R")
-
     mappings = info.desc().append_child("mappings")
+    # in the 'mapping' field, save the IDs of the pair in each connection
     buffer_keys = list(self.buffer.buffers_by_uid.keys())
     pair_index = [a for a in
                   list(product(np.arange(0, len(buffer_keys)), np.arange(0, len(buffer_keys))))
                   if a[0] < a[1]]
-
     for pair in pair_index:
       mappings.append_child("mapping") \
         .append_child_value("from", buffer_keys[pair[0]]) \
@@ -137,17 +173,24 @@ class Analysis:
 
     return StreamOutlet(info)
 
-  # phoebe edit
   def _setup_outlet_power(self):
+    """
+    Setting up LSL outlet for power values
+    :return: StreamOutlet object
+    """
     sample_size = self.STREAM_COUNT * self.channel_count * len(self.freqParams)
     self.logger.warning('power sample size is %s %s %s' % (self.STREAM_COUNT, self.channel_count, len(self.freqParams)))
     if sample_size == 0:
       return
     info = StreamInfo('Powervals', 'Markers', sample_size, IRREGULAR_RATE, cf_float32, "Pvals-{}".format(getpid()))
-    info.desc().append_child_value('subjects', '_'.join(list(self.buffer.buffers_by_uid.keys())))
+    info.desc().append_child_value('subjects', '_'.join(list(self.buffer.buffers_by_uid.keys())))  # the list of subjects' IDs
     return StreamOutlet(info)
 
   def _setup_coefficients(self):
+    """
+    set up band-pass filtering coefficients
+    :return: a list of butterworth filter parameters
+    """
     nyq = 0.5 * self.sample_rate
     min_band = 0.0 + 1.0e-10
     max_band = 1.0 - 1.0e-10
@@ -161,6 +204,10 @@ class Analysis:
     return coefficients
 
   def _setup_hann(self):
+    """
+    set up Hanning window
+    :return: Hanning coefficients
+    """
     denom = self.sample_size - 1
     hann = []
     for n in range(self.sample_size):
@@ -169,4 +216,8 @@ class Analysis:
     return np.array(hann)
 
   def _setup_num_connections(self):
+    """
+    calculate the number of connections given the number of streams (subjects)
+    :return: number of connections
+    """
     return sum(list(range(1, len(self.buffer.buffers_by_uid))))
