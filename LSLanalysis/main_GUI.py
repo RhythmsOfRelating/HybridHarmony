@@ -18,6 +18,9 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 class Ui_MainWindow(object):
+    """
+    Class for setting up the GUI
+    """
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1004, 591)
@@ -613,6 +616,10 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.setup()
 
     def setup(self):
+        """
+        function to set up the GUI components
+        :return:
+        """
         log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
         log_path = path.join(log_path, 'logging.conf')
         logging.config.fileConfig(log_path)
@@ -635,7 +642,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         for n_row in range(3):
             for n_col in range(4):
                 self.ui.freqTable.setItem(n_row, n_col, QtWidgets.QTableWidgetItem(default_freqTable[n_row][n_col]))
-        # actions
+        # initializing actions
         self.ui.btn_loadStreams.clicked.connect(self.fun_load_streams)
         self.ui.btn_start.clicked.connect(self.fun_analyze)
         self.ui.btn_stop.clicked.connect(self.fun_stop)
@@ -653,10 +660,13 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.lineEdit_manMax.textChanged.connect(self._weightslider)
         self.ui.lineEdit_manMin.textChanged.connect(self._weightslider)
 
-        # params
+        # initializing params
         self.fileMin, self.fileMax = None, None
 
     def _weightslider(self):
+        """
+        function to update normalization parameters based on the weight slider and inputs
+        """
         try:
             w = 100 - self.ui.horizontalSlider_normweight.sliderPosition()
             if self.fileMax is not None:
@@ -673,7 +683,9 @@ class Mainprogram(QtWidgets.QMainWindow):
             self.ui.param_check.append(str(e))
 
     def play_display(self):
-        # Thread:
+        """
+        set up a thread for displaying connectivity values in real time
+        """
         self.playthread = QtCore.QThread()
         self.displayer = Display(self.analysis.que)
         self.displayer.moveToThread(self.playthread)
@@ -689,11 +701,14 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.playthread.start()
 
     def reportProgress(self, r):
+        """
+        display connectivity values
+        """
         self.ui.rval_display.append(str(r))
 
     def fun_unlock(self):
         """
-        button unlock
+        button unlock after analysis is stopped
         """
         if self.analysis_running:  # stop analysis if running
             self.fun_stop()
@@ -719,6 +734,9 @@ class Mainprogram(QtWidgets.QMainWindow):
         return IP, port
 
     def _run_generate_random_samples(self):
+        """
+        thread to run random samples
+        """
         self.run_samples = SampleGeneration('random')
         self.run_samples.start()
         self.ui.actiongenerate_random_data.setEnabled(False)  # gray out the button
@@ -727,6 +745,9 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.param_check.append('Sending random samples for testing...')
 
     def _run_generate_xdf_samples(self):
+        """
+        thread to run testing samples
+        """
         self.run_samples = SampleGeneration('sample')
         self.run_samples.start()
         self.ui.actiongenerate_random_data.setEnabled(False)  # gray out the button
@@ -735,6 +756,9 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.param_check.append('Sending a sample recording for testing...')
 
     def _stop_generating(self):
+        """
+        stop the threads for running test samples, if any
+        """
         self.run_samples.stop()
         self.ui.actiongenerate_random_data.setEnabled(True)
         self.ui.actionplay_a_sample_recording_as_test_data.setEnabled(True)
@@ -743,7 +767,7 @@ class Mainprogram(QtWidgets.QMainWindow):
 
     def fun_load_streams(self):
         """
-        button 2. Scan for LSL streams
+        load EEG streams and display in the information table
         """
         # determine columns based on freq bands
         cols = ['Stream ID', "channel count", 'sampling rate']
@@ -794,6 +818,9 @@ class Mainprogram(QtWidgets.QMainWindow):
                 self.ui.infoTable.setItem(n_row, n_freq + 3, item)
 
     def fun_retrieve_params(self):
+        """
+        retrieve input parameters from the tables
+        """
         freqloaded = True
         infoloaded = True
         # read freq table
@@ -845,6 +872,10 @@ class Mainprogram(QtWidgets.QMainWindow):
             self.ui.freqTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
     def _read_input(self):
+        """
+        retrieve parameters from the text fields
+        :return:
+        """
         # device = self.comboBox_device.currentText()
         chn_type = self.ui.comboBox_chn.currentText()
         mode = self.ui.comboBox_conn.currentText()
@@ -860,11 +891,18 @@ class Mainprogram(QtWidgets.QMainWindow):
         return device, chn_type, mode, window_size, window_lag, norm_min, norm_max
 
     def _openfile(self):
+        """
+        pop up a dialog to open file
+        """
         fileName,_ = QtWidgets.QFileDialog.getOpenFileName(self, 'OpenFile')
         # self.myTextBox.setText(fileName)
         self.ui.lineEdit_filename.setText(str(fileName))
 
     def _computefile(self):
+        """
+        compute Min. and Max. from a previously recorded xdf file.
+        Note that the file must contain a marker stream named "RValues"
+        """
         try:
             self.ui.param_check.append('Loading baseline file...')
             filename = self.ui.lineEdit_filename.text()
@@ -890,6 +928,9 @@ class Mainprogram(QtWidgets.QMainWindow):
             self.ui.param_check.append(str(e))
 
     def fun_analyze(self):
+        """
+        run the analysis
+        """
         device, chn_type, mode, window_size, window_lag, norm_min, norm_max = self._read_input()
         IP, port = self._read_osc()
         # making sure first button was pressed
@@ -927,6 +968,9 @@ class Mainprogram(QtWidgets.QMainWindow):
         return int(factorial(n) / factorial(k) / factorial(n - k))
 
     def _enableEdit(self, bool):
+        """
+        make the buttons and fields (non)editable
+        """
         self.ui.btn_start.setEnabled(bool)
         self.ui.comboBox_conn.setEnabled(bool)
         self.ui.comboBox_chn.setEnabled(bool)
@@ -943,6 +987,9 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.pushButton_openfile.setEnabled(bool)
 
     def fun_stop(self):
+        """
+        function to stop analysis
+        """
         # stop analysis
         if self.ui.checkBox_display.isChecked():
             self.displayer.stop()
@@ -953,7 +1000,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.btn_stop.setEnabled(False)
         self.ui.btn_start.setEnabled(True)
         self.ui.btn_loadStreams.setEnabled(True)
-        # set edit area editable
+        # set parameter area editable
         self._enableEdit(True)
         self.fun_unlock()
         self.ui.param_check.append("Analysis stopped.\n")
@@ -974,17 +1021,15 @@ class Mainprogram(QtWidgets.QMainWindow):
         ind = list(dict.fromkeys(ind))  # remove duplicates
         ind.sort()  # sort
         return ind
-    #
-    # def open_bridge(self):
-    #     self.bridge = BridgeWindow()
-    #     self.bridge.show()
 
 class Display(QtCore.QObject):
-
     finished =QtCore.pyqtSignal()  # give worker class a finished signal
     progress = QtCore.pyqtSignal(list)
     error = QtCore.pyqtSignal(tuple)
     def __init__(self, que):
+        """
+        Class to display connectivity values
+        """
         QtCore.QObject.__init__(self, parent=None)
         self.continue_run = True  # provide a bool run condition for the class
         try:
