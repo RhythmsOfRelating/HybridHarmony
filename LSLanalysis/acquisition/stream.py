@@ -1,13 +1,25 @@
+"""
+Stream module for retrieving and saving LSL stream data
+"""
 import logging
-
 from .buffer import Buffer
 from threading import current_thread, Thread
 from pylsl import local_clock, StreamInlet, proc_threadsafe, proc_ALL, LostError, TimeoutError
 
-BUFFER_WINDOW = 10 # seconds
+# maximum buffer window
+BUFFER_WINDOW = 10  # seconds
 
 class Stream:
+  """
+  Class representing an LSL stream inlet and saving incoming data to a Buffer object
+  """
   def __init__(self, uid, stream_info, discard_timestamps=False, correct_timestamps=False):
+    """
+    :param uid: stream ID
+    :param stream_info: stream information
+    :param discard_timestamps: whether to discard the original timestamps and use local clock instead
+    :param correct_timestamps: determines post-processing flags. refer to pylsl for more info
+    """
     self.uid = uid
     self.name = stream_info.name()
     self.sample_rate = stream_info.nominal_srate()
@@ -24,6 +36,9 @@ class Stream:
     self.logger = logging.getLogger(__name__)
 
   def start(self):
+    """
+    start the thread
+    """
     if self.thread:
       return False
 
@@ -34,6 +49,9 @@ class Stream:
     return True
 
   def stop(self):
+    """
+    stop the thread
+    """
     if not self.thread:
       return True
 
@@ -45,6 +63,11 @@ class Stream:
     return True
 
   def _generate_timestamps(self, num_samples):
+    """
+    function to generate timestamps based on local clock
+    :param num_samples: number of samples
+    :return: timestamps
+    """
     current_timestamp = local_clock()
     timestamps = [current_timestamp]
     for n in range(num_samples):
@@ -53,19 +76,23 @@ class Stream:
     return timestamps
 
   def pull(self):
+    """
+    pull samples from the LSL stream inlet and save to Buffer
+    """
     try:
       self.info = self.inlet.info(1.0)
 
       while self.running:
         try:
+          # pull data chunks from the inlet
           samples, original_timestamps = self.inlet.pull_chunk(timeout=0.05)
           num_samples = len(samples)
 
           if num_samples > 0:
-            timestamps = self._generate_timestamps(num_samples) if self.discard_timestamps else original_timestamps
+            timestamps = self._generate_timestamps(num_samples) if self.discard_timestamps else original_timestamps  # determining timestamps
             self.logger.debug("{}: Retrieved chunk with {} samples from stream".format(self.name, len(samples)))
             self.updated_at = timestamps[-1]
-            self.buffer.extend(zip(timestamps, samples))
+            self.buffer.extend(zip(timestamps, samples))  # save to buffer
         except TimeoutError:
           self.logger.debug("{}: No data in stream".format(self.name))
     except (LostError, TimeoutError):
