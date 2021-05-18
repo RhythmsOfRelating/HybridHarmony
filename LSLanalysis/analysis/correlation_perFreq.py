@@ -1,14 +1,13 @@
+"""
+Correlation module calculating connectivity values from data
+"""
 import logging
-import json
 import numpy as np
-
-from os import getpid
 import os
-import math
 from itertools import islice
-from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_float32
+from pylsl import local_clock
 from scipy.signal import hilbert
-from scipy.signal import butter, lfilter
+from scipy.signal import lfilter
 from astropy.stats import circmean
 from itertools import product
 from osc4py3.as_allthreads import *
@@ -22,12 +21,39 @@ WINDOW = 3
 ORDER = 5
 
 class Correlation:
-
     def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
                  COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
+        """
+        Class computing connectivity values
+
+        :param sample_rate: sampling rate
+        :param channel_count: channel count
+        :param buffers: buffers that contain incoming EEG data
+        :param mode: connectivity mode. See notes for options.
+        :param chn_type: compute all electrode pairs if 'all-to-all';
+                         alternatively, compute only corresponding electrode pairs if 'one-to-one'
+        :param corr_params: a list of three lists: frequency parameters, channel parameters, weight parameters
+        :param OSC_params: OSC parameters for OSC transmission
+        :param compute_pow: boolean variable determining whether to compute and transmit power values
+        :param norm_params: a list of two numbers. min and max values for MinMax normalization
+        :param COEFFICIENTS: band-pass filtering coefficients
+        :param HANN: Hanning window coefficients
+        :param CONNECTIONS: number of connections
+        :param OUTLET: StreamOutlet object for connectivity value output
+        :param OUTLET_POWER: StreamOutlet object for power value output
+
+        Note:
+        **supported connectivity measures**
+          - 'envelope correlation': envelope correlation
+          - 'power correlation': power correlation
+          - 'plv': phase locking value
+          - 'ccorr': circular correlation coefficient
+          - 'coherence': coherence
+          - 'imaginary coherence': imaginary coherence
+        """
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
-        self.sample_size = int(sample_rate * WINDOW)
+        self.sample_size = int(sample_rate * WINDOW)  # number of samples in the analysis window
         self.channel_count = channel_count
         self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
@@ -55,35 +81,23 @@ class Correlation:
         self.SAMPLE_RATE = self.sample_rate
         self.CHANNEL_COUNT = self.channel_count
 
-    def _setup_OSC(self):
-        # reading params
-        IP = self.OSC_params[0]
-        port = int(self.OSC_params[1])
-        # Start the system.
-        osc_startup()
-        # Make client channels to send packets.
-        try:
-            osc_udp_client(IP, int(port), "Rvalues")
-        except:
-            osch.terminate_all_channels()
-            osc_udp_client(IP, int(port), "Rvalues")
-        sample_size = self.CONNECTIONS * len(self.freqParams)
-        # first message is empty
-        msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
-        osc_send(msg, 'Rvalues')
-
     def run(self):
+        """
+        running the analysis
+        :return: connectivity values
+        """
         global LAST_CALCULATION
         trailing_timestamp = self._find_trailing_timestamp()
 
         if trailing_timestamp != LAST_CALCULATION:
-            # self.logger.warning('trailing timestamp %s, last calculation %s' % (trailing_timestamp, LAST_CALCULATION))
-
             LAST_CALCULATION = trailing_timestamp
+            # select data for analysis based on the last timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp)
+            # apply Hanning window
             analysis_window = self._apply_window_weights(analysis_window)
-
+            # band-pass filter and compute analytic signal
             analytic_matrix = self._calculate_all(analysis_window)
+            # compute connectivity values
             rvalues = self._calculate_rvalues(analytic_matrix, self.mode)
             if self.compute_pow:
                 power_values = self._calculate_power(analytic_matrix)
@@ -106,20 +120,32 @@ class Correlation:
             return
 
     def _clamp(self, n):
+        """
+        helper function to clamp a float variable between 0 and 1
+        """
         return max(min(1, n), 0)
 
     def _apply_window_weights(self, analysis_window):
+        """
+        applying hanning window to data
+        :param analysis_window: dictionary with EEG data streams
+        :return: dictionary of the same shape after applying hanning window
+        """
         for uid in analysis_window.keys():
             analysis_window[uid] = np.multiply(analysis_window[uid], self.HANN[:, None])
         self.logger.debug("Applying window weights with %s samples and %s channels." % analysis_window[uid].shape)
         return analysis_window
 
     def _calculate_power(self, analytic_matrix):
+        """
+        compute power values from analytic signals
+        :param analytic_matrix: shape is (n_freq_bands, n_subjects, n_channel_count, n_sample_size). filtered analytic signal
+        :return: shape is (n_freq_bands, n_subjects, n_channel_count). Power values
+        """
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
 
     def _find_trailing_timestamp(self):
         trailing_timestamp = local_clock()
-        
         for buffer in self.buffers.values():
             timestamp, _ = buffer[-1]
             if trailing_timestamp > timestamp:
@@ -128,28 +154,45 @@ class Correlation:
         return trailing_timestamp
 
     def _select_analysis_window(self, trailing_timestamp):
+        """
+        construct the analysis window based on the timestamp from last window
+        :param trailing_timestamp: timestamp from the last window
+        :return: a dictionary containing data. each value is a matrix of size (n_sample_size, n_channel_count)
+        """
         analysis_window = {}
         
         for uid, buffer in self.buffers.items():
+            # compute the sample start
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))
             sample_start = len(buffer) - self.sample_size - sample_offset
-
             if sample_start < 0:
                 self.logger.info("Not enough data to process in buffer {}, using dummy data".format(uid))
                 analysis_window[uid] = np.zeros((self.sample_size, self.channel_count))
             else:
+                # take data from buffer
                 timestamped_window = list(islice(buffer, sample_start, sample_start + self.sample_size))
                 analysis_window[uid] = np.array([sample[1] for sample in timestamped_window])
 
         return analysis_window
 
     def _calculate_analytic(self, signal, coeff):
+        """
+        filter a signal and then apply Hilbert Transform to generate the analytic signal
+        :param signal: a signal of any shape (matrix or list)
+        :param coeff: filtering coefficients
+        :return: analytic signal
+        """
         signal = lfilter(coeff[0], coeff[1], signal)
         analytic_signal = hilbert(signal)
         return analytic_signal
 
     def _calculate_all(self, analysis_window):
+        """
+        compute analytic signal from the analysis window
+        :param analysis_window: a dictionary containing data
+        :return: a matrix of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
+        """
         all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
         all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(self.COEFFICIENTS)])
 
@@ -176,6 +219,13 @@ class Correlation:
         return product
 
     def compute_sync(self, complex_signal: np.ndarray, mode: str) -> np.ndarray:
+        """
+        helper function for computing connectivity value.
+        The result is a connectivity matrix of all possible electrode pairs between the dyad, including inter- and intra-brain connectivities.
+        :param complex_signal: complex signal of shape (n_freq, 2, n_channel_count, n_sample_size). data for one dyad.
+        :param mode: connectivity mode. see notes for details.
+        :return: connectivity matrix of shape (n_freq, 2*n_channel_count, 2*channel_count)
+        """
         n_ch, n_freq, n_samp = complex_signal.shape[2], complex_signal.shape[0], \
                                complex_signal.shape[3]
 
@@ -233,12 +283,20 @@ class Correlation:
         return con
 
     def _calculate_rvalues(self, analytic_matrix, mode):
+        """
+        computes connectivity value from the analytic signal
+        :param analytic_matrix: analytic signal of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
+        :param mode: connectivity mode. see notes for details.
+        :return: a list of length = n_connections * n_freq. connectivity values
+        """
+        # compute all possible pair combinations
         pair_index = [a for a in
                       list(product(np.arange(0, analytic_matrix.shape[1]), np.arange(0, analytic_matrix.shape[1])))
                       if a[0] < a[1]]
         rvals = []
+        # iterate for each combination
         for pair in pair_index:
-            con = np.abs(self.compute_sync(analytic_matrix[:, pair, :, :], mode))  # take the absolute value for envelope and pow corr and ccorr
+            con = np.abs(self.compute_sync(analytic_matrix[:, pair, :, :], mode))
             # the connectivity matrix for the current pair. shape is (n_freq, n_ch, n_ch)
             con = con[:, 0:self.channel_count, self.channel_count:]
             if 'all-to-all' in self.chn_type:  # all to all correlation
@@ -248,7 +306,6 @@ class Correlation:
                 result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]])
                           for i, freq in enumerate(self.freqParams.keys())]
             # adjust result according to weight parameters
-            # making sure the sum is 1
             weights = list(self.weightParams.values())
             result = [r*weight for r, weight in zip(result, weights)]
             result = [self._clamp((r-minn)/(maxx-minn)) for r, minn, maxx in zip(result, self.norm_min, self.norm_max)]
