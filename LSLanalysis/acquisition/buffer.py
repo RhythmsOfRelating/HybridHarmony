@@ -1,10 +1,18 @@
+"""
+buffer module used in LSL stream discovery
+"""
 import logging
-
 from collections import deque
 from threading import Condition
 
 class Buffer:
+  """
+  Buffer class for saving LSL stream data
+  """
   def __init__(self, size=100):
+    """
+    :param size: buffer size
+    """
     self.logger = logging.getLogger(__name__)
     self.condition = Condition()
     self.size = size
@@ -17,6 +25,10 @@ class Buffer:
        return self.samples[idx]
 
   def extend(self, samples):
+    """
+    save data to buffer
+    :param samples: incoming samples
+    """
     with self.condition:
       self.samples.extend(samples)
       self.condition.notify()
@@ -35,6 +47,11 @@ class Buffer:
           break
 
   def process(self, timeout=None):
+    """
+    return samples in the current buffer and clear buffer
+    :param timeout: timeout duration
+    :return: processed samples
+    """
     with self.condition:
       self.wait(timeout)
       processed_samples = list(self.samples)
