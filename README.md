@@ -7,7 +7,6 @@
 # Quick Start
 ## Requirements
 - [Python >= 3.6](https://www.python.org/downloads/) for the main application
-- [openFrameworks](https://openframeworks.cc/download/) for the visualization module
 
 ## Setup
 
@@ -67,10 +66,4 @@ $ python main_GUI.py
 [window_image]: https://github.com/RhythmsOfRelating/RhythmsOfRelating/blob/master/tutorial/tutorial1.png "window image 1"
 
 7. Follow the tutorial [here](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/LSLanalysis) to interact with the software.
-
-### Visualization Module (Mutual Brainwaves Lab)
-- For Mac users, download the release [Mutual Brainwaves Lab](https://github.com/RhythmsOfRelating/RhythmsOfRelating/releases/tag/v0.1-viz). The `.zip` file contains two applications: Mutual Brainwaves Lab Visuals and Mutual Brainwaves Lab Bridge.
-- For Windows users, the two applications can be built from the source code [here](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Visuals) and [here](https://github.com/RhythmsOfRelating/RhythmsOfRelating/tree/master/Mutual%20Brainwaves%20Lab%20Bridge). We will release a Python-based Mutual Brainwaves Lab soon to enable better compatibility with Windows system.
-
-
 
