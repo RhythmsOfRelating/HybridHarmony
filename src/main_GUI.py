@@ -3,19 +3,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from acquisition import Discovery
 from analysis import Analysis
 from support import SampleGeneration, load_xdf
-# from pyBridge import Ui_bridge_main, BridgeWindow
 import time
 import numpy as np
 import logging.config
 import logging
 import os, traceback
 from math import factorial
+import sys
 import os.path as path
-
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
+LOGO_PATH = resource_path('./headMutualBrainwavesLabWhite.ico')
 
 class Ui_MainWindow(object):
     """
@@ -526,8 +526,8 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         self.menusupport = QtWidgets.QMenu(self.menubar)
         self.menusupport.setObjectName("menusupport")
-        self.menufunctions = QtWidgets.QMenu(self.menubar)
-        self.menufunctions.setObjectName("menufunctions")
+        self.menuabout = QtWidgets.QMenu(self.menubar)
+        self.menuabout.setObjectName('menuabout')
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -536,24 +536,26 @@ class Ui_MainWindow(object):
         self.actiongenerate_random_data.setObjectName("actiongenerate_random_data")
         self.actionplay_a_sample_recording_as_test_data = QtWidgets.QAction(MainWindow)
         self.actionplay_a_sample_recording_as_test_data.setObjectName("actionplay_a_sample_recording_as_test_data")
-        # self.actionbridge = QtWidgets.QAction(MainWindow)
-        # self.actionbridge.setObjectName("actionbridge")
         self.actionstop_generating = QtWidgets.QAction(MainWindow)
         self.actionstop_generating.setObjectName("actionstop_generating")
+        self.action_help = QtWidgets.QAction(MainWindow)
+        self.action_help.setObjectName('action_help')
+        self.action_about = QtWidgets.QAction(MainWindow)
+        self.action_about.setObjectName('action_about')
         self.menusupport.addSeparator()
         self.menusupport.addAction(self.actiongenerate_random_data)
         self.menusupport.addAction(self.actionplay_a_sample_recording_as_test_data)
         self.menusupport.addAction(self.actionstop_generating)
-        # self.menufunctions.addAction(self.actionbridge)
         self.menubar.addAction(self.menusupport.menuAction())
-        self.menubar.addAction(self.menufunctions.menuAction())
-
+        self.menubar.addAction(self.action_help)
+        self.menubar.addAction(self.action_about)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "RhythmOfRelating"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Hybrid Harmony"))
+        MainWindow.setWindowIcon(QtGui.QIcon(LOGO_PATH))
         self.label_3.setText(_translate("MainWindow", "Frequency bands for analysis"))
         self.label_4.setText(_translate("MainWindow", "Input data streams"))
         self.btn_loadStreams.setToolTip(_translate("MainWindow", "detect LSL streams for analysis. Streams should be displayed on the table above."))
@@ -601,11 +603,11 @@ class Ui_MainWindow(object):
         self.checkBox_pow.setText(_translate("MainWindow", "sending power values"))
         self.btn_start.setText(_translate("MainWindow", "2. start analysis"))
         self.btn_stop.setText(_translate("MainWindow", "stop analysis"))
-        self.menusupport.setTitle(_translate("MainWindow", "support"))
-        self.menufunctions.setTitle(_translate("MainWindow", "functions"))
+        self.menusupport.setTitle(_translate("MainWindow", "Tools"))
         self.actiongenerate_random_data.setText(_translate("MainWindow", "play a random signal for testing"))
         self.actionplay_a_sample_recording_as_test_data.setText(_translate("MainWindow", "play a sample recording for testing"))
-        # self.actionbridge.setText(_translate("MainWindow", "bridge"))
+        self.action_help.setText(_translate("MainWindow", "Help"))
+        self.action_about.setText(_translate("MainWindow", "About"))
         self.actionstop_generating.setText(_translate("MainWindow", "stop generating"))
 
 class Mainprogram(QtWidgets.QMainWindow):
@@ -618,12 +620,11 @@ class Mainprogram(QtWidgets.QMainWindow):
     def setup(self):
         """
         function to set up the GUI components
-        :return:
         """
-        log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
-        log_path = path.join(log_path, 'logging.conf')
-        logging.config.fileConfig(log_path)
-        # logging.config.fileConfig(resource_path('log/logging.conf'))
+        # log_path = path.join(path.dirname(path.abspath(__file__)), 'log')
+        # log_path = path.join(log_path, 'logging.conf')
+        # logging.config.fileConfig(log_path)
+        logging.config.fileConfig(resource_path('log/logging.conf'))
         # initialization
         self.conn_params = []
         self.analysis_running = False
@@ -653,8 +654,8 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.actiongenerate_random_data.triggered.connect(self._run_generate_random_samples)
         self.ui.actionplay_a_sample_recording_as_test_data.triggered.connect(self._run_generate_xdf_samples)
         self.ui.actionstop_generating.triggered.connect(self._stop_generating)
-        # self.ui.actionbridge.triggered.connect(self.open_bridge)
-        # self.ui.actionbridge.setEnabled(False)
+        self.ui.action_help.triggered.connect(self._open_help)
+        self.ui.action_about.triggered.connect(self._open_about)
         # getting value changed signal
         self.ui.horizontalSlider_normweight.valueChanged.connect(self._weightslider)
         self.ui.lineEdit_manMax.textChanged.connect(self._weightslider)
@@ -662,6 +663,22 @@ class Mainprogram(QtWidgets.QMainWindow):
 
         # initializing params
         self.fileMin, self.fileMax = None, None
+
+    def _open_about(self):
+        """
+        function to open 'about' information
+        """
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle('About')
+        msg.setText('lsl: version\nApp: 1.0\nLicense')
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.exec()
+    def _open_help(self):
+        """
+        function to open online tutorial
+        """
+        linkStr = "https://github.com/RhythmsOfRelating/HybridHarmony/wiki/Software-Manual"
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
     def _weightslider(self):
         """
@@ -686,7 +703,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         set up a thread for displaying connectivity values in real time
         """
-        self.playthread = QtCore.QThread()
+        self.playthread = QtCore.QThread(parent=self)
         self.displayer = Display(self.analysis.que)
         self.displayer.moveToThread(self.playthread)
 
@@ -1056,16 +1073,6 @@ class Display(QtCore.QObject):
 
 if __name__ == "__main__":
     import sys
-    # Back up the reference to the exceptionhook
-    # sys._excepthook = sys.excepthook
-    # def my_exception_hook(exctype, value, traceback):
-    #     # Print the error and traceback
-    #     print(exctype, value, traceback)
-    #     # Call the normal Exception hook after
-    #     sys._excepthook(exctype, value, traceback)
-    #     sys.exit(1)
-    # # Set the exception hook to our wrapping function
-    # sys.excepthook = my_exception_hook
     app = QtWidgets.QApplication(sys.argv)
     Main = Mainprogram()
     Main.show()
