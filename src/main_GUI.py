@@ -670,7 +670,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle('About')
-        msg.setText('lsl: version\nApp: 1.0\nLicense')
+        msg.setText('lsl: version\nApp: 1.0\nLicense:\nCopyright (c) 2021 Phoebe Chen\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.')
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.exec()
     def _open_help(self):
