@@ -1,11 +1,10 @@
 # Overview
 **Hybrid Harmony** is a a Brain-Computer Interface (BCI) application that supports the simultaneous recording of multiple (neurophysiological) datastreams and the real-time visualization and sonification of inter-brain synchrony. The program a backend that handles data and performs analyses, and a Graphical User Interface (GUI) made with PyQt5 for interactively control the analyses. Refer to the super-repository [RhythmsofRelating](https://github.com/RhythmsOfRelating/RhythmsOfRelating) for other sub-modules such as [LabVisuals] for visualization and [LabRecorder](https://github.com/labstreaminglayer/App-LabRecorder/tree/c9a417f025552ad6b95aa747631dcd4f9d26f3b2) for recording data.
 
-# Quick Start
-## Requirements
+# Requirements
 - [Python >= 3.6](https://www.python.org/downloads/)
 
-## Installation
+# Installation
 
 - This project uses [`pipenv`](https://docs.pipenv.org/) to manage Python dependencies.
 
@@ -69,7 +68,6 @@ The following steps describe a test session using randomly generated data or pre
 ### Determine frequency bands
 <img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/freq.png" width="400"><br />
 3. Modify the table **Frequency bands for analysis** based on frequency bands of interest to the user. <br />
-Notes:
 - The table has the following columns: 
   - **Freq. Band**: Name of the frequency band
   - **Min. Freq.**: The lower bound frequency for the ban
@@ -79,7 +77,6 @@ Notes:
 ### Load EEG streams and select channels 
 ![alt text](https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/add1.png)<br />
 4. Once finishing modifying the frequency bands table, click the button **1. load LSL streams**, and **Input data streams** should display the available EEG streams.<br />
-Notes:
 - if **play a random signal for testing** was clicked in step one, the table should display two EEG streams with 32 channels and 60 Hz sampling rate. Alternatively, if **play a sample recording for testing** was clicked in step one, then there should be 4 streams with 4 channels and 256 Hz sampling rate. <br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/add3.png" width="400">
 - The table **Input data streams** has the following *non-editable* columns:
 ![alt text](https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/add3.png)<br />
@@ -94,14 +91,13 @@ Notes:
 - The channel number cells can be modified uniformly for all subjects. Channel numbers should be formatted with semicolons and comas. For example '6:10,1:3,16,31' means selecting channels 1, 2, 3, 6, 7, 8, 9, 10, 16, 31.
 ### Parametrize connectivity analysis
 <br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/walkthrough4.png"><br />
-5. Select **Connectivity Type**.<br /> Notes:
+5. Select **Connectivity Type**.
 - **Connectivity Type** determines how the connectivity values are averaged acrosss electrode pairs. If “connectivity type” is “one-to-one”, only electrode pairs in the matching position are considered (e.g., Fp1 channel of participant A is 224 only paired with Fp1 of participant B and C, etc.); alternatively, if it’s set to “all-to-all”, all electrode pairs are considered in the averaging.
 <br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/walkthrough5.png"><br />
-6. Select **Connectivity metric**. <br />Notes:
+6. Select **Connectivity metric**.
 - **Connectivity metric** determines the synchrony calculation between two signals. "PLV" stands for Phase Locking Value, "CCorr" stands for Circular Correlation Coefficients. Refer to the paper for further explanation.<br />
 7. Set **Window size**, the length of data segment to compute synchrony over. This value should be between 2 and 10 seconds. Default is 3 seconds.
-### Normalization
-Notes: 
+### Normalization 
 - Normalization of connectivity values is implemented with two options: manual normalization (labeled as “Manual”) and baselining with a pre-recorded file (labeled as “from file”). With a Min-Max normalization method, the user can use either of the options, or a mixture of both with a weighting factor adjusted by the slider “Weight”. The minimum and maximum limits are then weighted between the “Manual” and “from file” options.<br />
 8. To use "manual" option: type in field "Manual Min." and "Max.". These two numbers determines the minumum and maximum of the "manual" option. Values exeeding the limits will be clamp to 0 or 1.<br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/add2.png"><br />
 9. (optional) To use "from file" option: Click **Open...** to open a pre-recorded .xdf file (for details, refer to xxx), <br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/norm2.png"><br />
@@ -124,4 +120,4 @@ and then click **compute** to compute minimum and maximum of the "from file" opt
 17. Click **stop generating** from the **Tools** menu. This will stop the incoming test data.
 <br /><img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/add6.png"><br />
 
-
+## Recording Data with LabRecorder 
