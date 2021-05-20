@@ -13,7 +13,8 @@ from itertools import product
 from osc4py3.as_allthreads import *
 from osc4py3 import oscbuildparse
 from osc4py3 import oscchannel as osch
-
+import warnings
+warnings.filterwarnings("ignore")
 current = os.path.dirname(__file__)
 
 LAST_CALCULATION = local_clock()
@@ -136,11 +137,31 @@ class Correlation:
         self.logger.debug("Applying window weights with %s samples and %s channels." % analysis_window[uid].shape)
         return analysis_window
 
+    def _setup_OSC(self):
+        """
+        setting up OSC outlet
+        """
+        # reading params
+        IP = self.OSC_params[0]
+        port = int(self.OSC_params[1])
+        # Start the system.
+        osc_startup()
+        # Make client channels to send packets.
+        try:
+            osc_udp_client(IP, int(port), "Rvalues")
+        except:
+            osch.terminate_all_channels()
+            osc_udp_client(IP, int(port), "Rvalues")
+        sample_size = self.CONNECTIONS * len(self.freqParams)
+        # first message is empty
+        msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
+        osc_send(msg, 'Rvalues')
+
     def _calculate_power(self, analytic_matrix):
         """
         compute power values from analytic signals
         :param analytic_matrix: shape is (n_freq_bands, n_subjects, n_channel_count, n_sample_size). filtered analytic signal
-        :return: shape is (n_freq_bands, n_subjects, n_channel_count). Power values
+        :return: a vector that can be reshaped into (n_freq_bands, n_subjects, n_channel_count). Power values
         """
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
 
