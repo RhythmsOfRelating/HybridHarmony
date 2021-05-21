@@ -53,7 +53,7 @@ class Analysis:
     self.running = False
     self.corr = None
     self.que = Queue(maxsize=1000)
-
+    #self.sr = self.discover.sample_rate
     self.buffer.pull()  # pull data (once) in order to set up the following information
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
@@ -67,7 +67,20 @@ class Analysis:
       self.OUTLET_POWER = self._setup_outlet_power()
     else:
       self.OUTLET_POWER = None
-
+    self.corr = Correlation(
+      sample_rate=self.sample_rate,
+      channel_count=self.channel_count,
+      stream_count = len(self.buffer.buffers_by_uid),
+      mode=self.mode,
+      chn_type=self.chn_type,
+      corr_params=self.corr_params,
+      OSC_params=self.OSC_params,
+      compute_pow=self.compute_pow,
+      norm_params=self.norm_params,
+      COEFFICIENTS=self.COEFFICIENTS,
+      HANN=self.HANN,
+      CONNECTIONS=self.CONNECTIONS,
+      OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER)
   def start(self):
     """
     Start thread for analysis, while saving the output of self._update to the que parameter
@@ -123,28 +136,14 @@ class Analysis:
     # Make sure we have buffers to analyze
     if len(self.buffer.buffers_by_uid) == 0:
       return
-    # create correlation object
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
     # Make sure we're still connected and have a sample rate
     if not self.sample_rate or not self.channel_count:
       self.logger.warning('connection broken.')
       return
-    self.corr = Correlation(
-      sample_rate=self.sample_rate,
-      channel_count=self.channel_count,
-      buffers=self.buffer.buffers_by_uid,
-      mode=self.mode,
-      chn_type=self.chn_type,
-      corr_params=self.corr_params,
-      OSC_params=self.OSC_params,
-      compute_pow=self.compute_pow,
-      norm_params=self.norm_params,
-      COEFFICIENTS=self.COEFFICIENTS,
-      HANN=self.HANN,
-      CONNECTIONS=self.CONNECTIONS,
-      OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER)
-    r = self.corr.run()
+
+    r = self.corr.run(self.buffer.buffers_by_uid)
     return r
 
   # helper functions to set up
