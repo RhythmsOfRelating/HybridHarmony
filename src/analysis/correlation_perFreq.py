@@ -18,18 +18,16 @@ warnings.filterwarnings("ignore")
 current = os.path.dirname(__file__)
 
 LAST_CALCULATION = local_clock()
-WINDOW = 3
 ORDER = 5
 
 class Correlation:
-    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
-                 COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
+    def __init__(self, sample_rate, channel_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
+                 window_length, COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
         """
         Class computing connectivity values
 
         :param sample_rate: sampling rate
         :param channel_count: channel count
-        :param buffers: buffers that contain incoming EEG data
         :param mode: connectivity mode. See notes for options.
         :param chn_type: compute all electrode pairs if 'all-to-all';
                          alternatively, compute only corresponding electrode pairs if 'one-to-one'
@@ -54,9 +52,8 @@ class Correlation:
         """
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
-        self.sample_size = int(sample_rate * WINDOW)  # number of samples in the analysis window
+        self.window_length = window_length  # number of samples in the analysis window
         self.channel_count = channel_count
-        self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
         self.compute_pow = compute_pow
@@ -64,7 +61,8 @@ class Correlation:
         self.mode = mode
         self.chn_type = chn_type
         self.timestamp = None
-        self._setup()
+        self.SAMPLE_RATE = self.sample_rate
+        self.CHANNEL_COUNT = self.channel_count
 
         # read setup tools
         self.COEFFICIENTS = COEFFICIENTS
@@ -76,24 +74,18 @@ class Correlation:
         if OSC_params[0] is not None:
             self._setup_OSC()
 
-    def _setup(self):
-        # moving global variables to class parameters
-        self.STREAM_COUNT = len(self.buffers)
-        self.SAMPLE_RATE = self.sample_rate
-        self.CHANNEL_COUNT = self.channel_count
-
-    def run(self):
+    def run(self, buffers):
         """
         running the analysis
         :return: connectivity values
         """
         global LAST_CALCULATION
-        trailing_timestamp = self._find_trailing_timestamp()
+        trailing_timestamp = self._find_trailing_timestamp(buffers)
 
         if trailing_timestamp != LAST_CALCULATION:
             LAST_CALCULATION = trailing_timestamp
             # select data for analysis based on the last timestamp
-            analysis_window = self._select_analysis_window(trailing_timestamp)
+            analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
             # apply Hanning window
             analysis_window = self._apply_window_weights(analysis_window)
             # band-pass filter and compute analytic signal
@@ -108,7 +100,6 @@ class Correlation:
             if self.OUTLET:
                 self.logger.warning("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
                 self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
-                # self.logger.warning('rvals='+str(rvalues))
             # sending OSC packets
             if self.OSC_params[0] is not None:  # if sending OSC
                 sample_size = self.CONNECTIONS * len(self.freqParams)
@@ -152,10 +143,10 @@ class Correlation:
         except:
             osch.terminate_all_channels()
             osc_udp_client(IP, int(port), "Rvalues")
-        sample_size = self.CONNECTIONS * len(self.freqParams)
         # first message is empty (removed this bc it's causing OSC msg to be all zeros)
         # msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
         # osc_send(msg, 'Rvalues')
+
     def _calculate_power(self, analytic_matrix):
         """
         compute power values from analytic signals
@@ -164,16 +155,16 @@ class Correlation:
         """
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
 
-    def _find_trailing_timestamp(self):
+    def _find_trailing_timestamp(self, buffers):
         trailing_timestamp = local_clock()
-        for buffer in self.buffers.values():
+        for buffer in buffers.values():
             timestamp, _ = buffer[-1]
             if trailing_timestamp > timestamp:
                 trailing_timestamp = timestamp
         
         return trailing_timestamp
 
-    def _select_analysis_window(self, trailing_timestamp):
+    def _select_analysis_window(self, trailing_timestamp, buffers):
         """
         construct the analysis window based on the timestamp from last window
         :param trailing_timestamp: timestamp from the last window
@@ -181,17 +172,17 @@ class Correlation:
         """
         analysis_window = {}
         
-        for uid, buffer in self.buffers.items():
+        for uid, buffer in buffers.items():
             # compute the sample start
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))
-            sample_start = len(buffer) - self.sample_size - sample_offset
+            sample_start = len(buffer) - self.window_length - sample_offset
             if sample_start < 0:
                 self.logger.info("Not enough data to process in buffer {}, using dummy data".format(uid))
-                analysis_window[uid] = np.zeros((self.sample_size, self.channel_count))
+                analysis_window[uid] = np.zeros((self.window_length, self.channel_count))
             else:
                 # take data from buffer
-                timestamped_window = list(islice(buffer, sample_start, sample_start + self.sample_size))
+                timestamped_window = list(islice(buffer, sample_start, sample_start + self.window_length))
                 analysis_window[uid] = np.array([sample[1] for sample in timestamped_window])
 
         return analysis_window
