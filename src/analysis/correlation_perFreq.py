@@ -153,10 +153,9 @@ class Correlation:
             osch.terminate_all_channels()
             osc_udp_client(IP, int(port), "Rvalues")
         sample_size = self.CONNECTIONS * len(self.freqParams)
-        # first message is empty
-        msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
-        osc_send(msg, 'Rvalues')
-
+        # first message is empty (removed this bc it's causing OSC msg to be all zeros)
+        # msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
+        # osc_send(msg, 'Rvalues')
     def _calculate_power(self, analytic_matrix):
         """
         compute power values from analytic signals
