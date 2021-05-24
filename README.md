@@ -59,6 +59,6 @@ Note that after the initial setup, steps 1-3 can be omitted and users should sta
 $ python main_GUI.py
 ```
 6. The following window should pop up:
-![alt text](https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/default.png)
+<img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/freq.png" width="400">
 
 7. Follow the manual to interact with the software.
