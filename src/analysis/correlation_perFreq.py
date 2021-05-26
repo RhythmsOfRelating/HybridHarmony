@@ -22,14 +22,14 @@ WINDOW = 3
 ORDER = 5
 
 class Correlation:
-    def __init__(self, sample_rate, channel_count, buffers, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
+    def __init__(self, sample_rate, channel_count, stream_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
                  COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
         """
         Class computing connectivity values
 
         :param sample_rate: sampling rate
         :param channel_count: channel count
-        :param buffers: buffers that contain incoming EEG data
+        :param stream_count: number of streams under analysis
         :param mode: connectivity mode. See notes for options.
         :param chn_type: compute all electrode pairs if 'all-to-all';
                          alternatively, compute only corresponding electrode pairs if 'one-to-one'
@@ -56,7 +56,7 @@ class Correlation:
         self.sample_rate = sample_rate
         self.sample_size = int(sample_rate * WINDOW)  # number of samples in the analysis window
         self.channel_count = channel_count
-        self.buffers = buffers
+        #self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
         self.compute_pow = compute_pow
@@ -64,8 +64,10 @@ class Correlation:
         self.mode = mode
         self.chn_type = chn_type
         self.timestamp = None
-        self._setup()
-
+        #self._setup()
+        self.STREAM_COUNT = stream_count
+        self.SAMPLE_RATE = self.sample_rate
+        self.CHANNEL_COUNT = self.channel_count
         # read setup tools
         self.COEFFICIENTS = COEFFICIENTS
         self.HANN = HANN
@@ -76,24 +78,25 @@ class Correlation:
         if OSC_params[0] is not None:
             self._setup_OSC()
 
-    def _setup(self):
-        # moving global variables to class parameters
-        self.STREAM_COUNT = len(self.buffers)
-        self.SAMPLE_RATE = self.sample_rate
-        self.CHANNEL_COUNT = self.channel_count
 
-    def run(self):
+#    def _setup(self):
+        # moving global variables to class parameters
+#        self.STREAM_COUNT = len(self.buffers)
+#        self.SAMPLE_RATE = self.sample_rate
+#        self.CHANNEL_COUNT = self.channel_count
+
+    def run(self, buffers):
         """
         running the analysis
         :return: connectivity values
         """
         global LAST_CALCULATION
-        trailing_timestamp = self._find_trailing_timestamp()
+        trailing_timestamp = self._find_trailing_timestamp(buffers)
 
         if trailing_timestamp != LAST_CALCULATION:
             LAST_CALCULATION = trailing_timestamp
             # select data for analysis based on the last timestamp
-            analysis_window = self._select_analysis_window(trailing_timestamp)
+            analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
             # apply Hanning window
             analysis_window = self._apply_window_weights(analysis_window)
             # band-pass filter and compute analytic signal
@@ -165,16 +168,16 @@ class Correlation:
         """
         return np.nanmean(np.abs(analytic_matrix)**2, axis=3).reshape(-1)
 
-    def _find_trailing_timestamp(self):
+    def _find_trailing_timestamp(self, buffers):
         trailing_timestamp = local_clock()
-        for buffer in self.buffers.values():
+        for buffer in buffers.values():#self.buffers.values():
             timestamp, _ = buffer[-1]
             if trailing_timestamp > timestamp:
                 trailing_timestamp = timestamp
         
         return trailing_timestamp
 
-    def _select_analysis_window(self, trailing_timestamp):
+    def _select_analysis_window(self, trailing_timestamp, buffers):
         """
         construct the analysis window based on the timestamp from last window
         :param trailing_timestamp: timestamp from the last window
@@ -182,7 +185,7 @@ class Correlation:
         """
         analysis_window = {}
         
-        for uid, buffer in self.buffers.items():
+        for uid, buffer in buffers.items():#self.buffers.items():
             # compute the sample start
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))
