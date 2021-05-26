@@ -187,17 +187,6 @@ class Correlation:
 
         return analysis_window
 
-    def _calculate_analytic(self, signal, coeff):
-        """
-        filter a signal and then apply Hilbert Transform to generate the analytic signal
-        :param signal: a signal of any shape (matrix or list)
-        :param coeff: filtering coefficients
-        :return: analytic signal
-        """
-        signal = lfilter(coeff[0], coeff[1], signal)
-        analytic_signal = hilbert(signal)
-        return analytic_signal
-
     def _calculate_all(self, analysis_window):
         """
         compute analytic signal from the analysis window
@@ -205,7 +194,7 @@ class Correlation:
         :return: a matrix of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
         """
         all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
-        all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(self.COEFFICIENTS)])
+        all_analytic = np.array([hilbert(lfilter(coeff[0], coeff[1], all_analytic)) for c, coeff in enumerate(self.COEFFICIENTS)])
 
         return all_analytic
 
