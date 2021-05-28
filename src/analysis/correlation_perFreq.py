@@ -193,7 +193,7 @@ class Correlation:
         :param analysis_window: a dictionary containing data
         :return: a matrix of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
         """
-        all_analytic = np.swapaxes(np.array(list(analysis_window.values())),1,2)
+        all_analytic = zscore(np.swapaxes(np.array(list(analysis_window.values())),1,2), axis=-1)  # shape = (n_sub, n_chn, n_times)
         all_analytic = np.array([hilbert(lfilter(coeff[0], coeff[1], all_analytic)) for c, coeff in enumerate(self.COEFFICIENTS)])
         return all_analytic
 
