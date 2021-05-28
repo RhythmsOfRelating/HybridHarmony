@@ -11,6 +11,8 @@ from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_floa
 from scipy.signal import butter
 from itertools import product
 import numpy as np
+from itertools import islice
+from scipy.stats import zscore
 ORDER = 5
 WINDOW = 3
 
@@ -123,6 +125,11 @@ class Analysis:
     while self.running:
       try:
         self.buffer.pull()
+        # self.logger.warning(str(list(self.buffer.buffers_by_uid.keys())))
+        # samples0 = list(islice(self.buffer.buffers_by_uid[list(self.buffer.buffers_by_uid.keys())[0]],0,10))
+        # samples1 = list(islice(self.buffer.buffers_by_uid[list(self.buffer.buffers_by_uid.keys())[1]], 0, 10))
+        # self.logger.warning(samples0)
+        # self.logger.warning(samples1)
         r = self._calculate()
         if r:
           que.put(["{:.4f}".format(a_float) for a_float in r])

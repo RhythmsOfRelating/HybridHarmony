@@ -5,6 +5,8 @@ import logging
 import time
 from collections import deque
 from pylsl import local_clock
+import numpy as np
+from scipy.stats import zscore
 
 BUFFER_WINDOW = 20  # seconds
 
@@ -58,7 +60,6 @@ class Buffer:
     """
     for uid, stream in self.discovery.streams_by_uid.items():
       samples = stream.buffer.process(timeout=0.0)
-
       if len(samples) > 0:
         self.logger.debug("{}: Taking {} samples from buffer".format(stream.name, len(samples)))
         # if uid is new, then create a new deque object

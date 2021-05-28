@@ -1,9 +1,11 @@
 from threading import current_thread, Thread
-from random import random as rand
+import numpy as np
 import random, sys, os
 import string, time
 from .xdf import load_xdf
 from pylsl import local_clock, StreamInfo, StreamOutlet
+
+RANDOM_CHN = 16
 
 class SampleGeneration:
   def __init__(self, mode):
@@ -47,7 +49,7 @@ class SampleGeneration:
               letters = string.digits
               id = ''.join(random.choice(letters) for i in range(4))
               uid = str(colors[num]) + '-' + id
-              info = StreamInfo('EEG-{}'.format(uid), 'EEG', 32, self.sample_rate, 'float32', uid)
+              info = StreamInfo('EEG-{}'.format(uid), 'EEG', RANDOM_CHN, self.sample_rate, 'float32', uid)
               self.outlets.append(StreamOutlet(info))
       else:
           # filepath = self.resource_path('support/session_2020_02_21_14_21_11_anticipation.xdf')  # TODO
@@ -68,7 +70,7 @@ class SampleGeneration:
         if self.mode == 'random':
             ts = local_clock()
             for outlet in self.outlets:
-                sample = [rand()] * 32
+                sample = list(np.random.rand(RANDOM_CHN))
                 outlet.push_sample(sample, timestamp=ts)
             time.sleep(1.0 / self.sample_rate)
         else:

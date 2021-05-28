@@ -8,6 +8,7 @@ from itertools import islice
 from pylsl import local_clock
 from scipy.signal import hilbert
 from scipy.signal import lfilter
+from scipy.stats import zscore
 from astropy.stats import circmean
 from itertools import product
 from osc4py3.as_allthreads import *
@@ -87,7 +88,7 @@ class Correlation:
             # select data for analysis based on the last timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
             # apply Hanning window
-            analysis_window = self._apply_window_weights(analysis_window)
+            # analysis_window = self._apply_window_weights(analysis_window)
             # band-pass filter and compute analytic signal
             analytic_matrix = self._calculate_all(analysis_window)
             # compute connectivity values
@@ -184,7 +185,6 @@ class Correlation:
                 # take data from buffer
                 timestamped_window = list(islice(buffer, sample_start, sample_start + self.window_length))
                 analysis_window[uid] = np.array([sample[1] for sample in timestamped_window])
-
         return analysis_window
 
     def _calculate_all(self, analysis_window):
@@ -193,9 +193,8 @@ class Correlation:
         :param analysis_window: a dictionary containing data
         :return: a matrix of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
         """
-        all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
+        all_analytic = np.swapaxes(np.array(list(analysis_window.values())),1,2)
         all_analytic = np.array([hilbert(lfilter(coeff[0], coeff[1], all_analytic)) for c, coeff in enumerate(self.COEFFICIENTS)])
-
         return all_analytic
 
     # helper function
@@ -259,7 +258,7 @@ class Correlation:
             dphi = self._multiply_conjugate(c, s, transpose_axes=transpose_axes)
             con = np.abs(dphi) / np.sqrt(np.einsum('il,ik->ilk', np.nansum(amp, axis=2),
                                                             np.nansum(amp, axis=2)))
-
+            # self.logger.warning('con '+str(con[2,18:,0:18]))
         elif mode.lower() == 'imaginary coherence':
             c = np.real(complex_signal)
             s = np.imag(complex_signal)
