@@ -64,7 +64,6 @@ class Correlation:
         self.timestamp = None
         self.SAMPLE_RATE = self.sample_rate
         self.CHANNEL_COUNT = self.channel_count
-
         # read setup tools
         self.COEFFICIENTS = COEFFICIENTS
         self.HANN = HANN
@@ -158,7 +157,8 @@ class Correlation:
 
     def _find_trailing_timestamp(self, buffers):
         trailing_timestamp = local_clock()
-        for buffer in buffers.values():
+
+        for buffer in buffers.values():#self.buffers.values():
             timestamp, _ = buffer[-1]
             if trailing_timestamp > timestamp:
                 trailing_timestamp = timestamp
@@ -172,8 +172,9 @@ class Correlation:
         :return: a dictionary containing data. each value is a matrix of size (n_sample_size, n_channel_count)
         """
         analysis_window = {}
-        
-        for uid, buffer in buffers.items():
+
+        for uid, buffer in buffers.items():#self.buffers.items():
+
             # compute the sample start
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))

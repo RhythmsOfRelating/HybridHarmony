@@ -11,7 +11,7 @@ Refer to
 
 - This project uses [`pipenv`](https://docs.pipenv.org/) to manage Python dependencies.
 
-- For Windows users, download the latest release and run the executable file titled `HybridHarmony vx.x.exe`. Here is [v1.0](https://github.com/RhythmsOfRelating/RhythmsOfRelating/releases/tag/v1.0).
+- For Windows users, download the latest release and run the executable file titled `HybridHarmony vx.x.exe`. Here is [v1.0](https://github.com/RhythmsOfRelating/HybridHarmony/releases/tag/v1.0).
 
 - For developers and Mac users, refer to the following steps:
 
@@ -59,6 +59,6 @@ Note that after the initial setup, steps 1-3 can be omitted and users should sta
 $ python main_GUI.py
 ```
 6. The following window should pop up:
-![alt text](https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/default.png)
+<img src="https://github.com/RhythmsOfRelating/HybridHarmony/blob/master/tutorial/default.png" width="400">
 
 7. Follow the manual to interact with the software.

@@ -55,7 +55,7 @@ class Analysis:
     self.running = False
     self.corr = None
     self.que = Queue(maxsize=1000)
-
+    #self.sr = self.discover.sample_rate
     self.buffer.pull()  # pull data (once) in order to set up the following information
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
@@ -69,6 +69,7 @@ class Analysis:
       self.OUTLET_POWER = self._setup_outlet_power()
     else:
       self.OUTLET_POWER = None
+
     # create the correlation object with all parameters (besides the incoming data)
     self.corr = Correlation(
       sample_rate=self.sample_rate,
@@ -84,7 +85,6 @@ class Analysis:
       HANN=self.HANN,
       CONNECTIONS=self.CONNECTIONS,
       OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER)
-
 
   def start(self):
     """
@@ -144,7 +144,6 @@ class Analysis:
     # Make sure we have buffers to analyze
     if len(self.buffer.buffers_by_uid) == 0:
       return
-    # create correlation object
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
     # Make sure we're still connected and have a sample rate
