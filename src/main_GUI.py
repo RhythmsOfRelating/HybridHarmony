@@ -289,12 +289,15 @@ class Ui_MainWindow(object):
         self.params.addWidget(self.comboBox_chn, 2, 2, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.lineEdit_wsize = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setFamily("Calibri")
-        self.lineEdit_wsize.setFont(font)
-        self.lineEdit_wsize.setObjectName("lineEdit_wsize")
-        self.horizontalLayout.addWidget(self.lineEdit_wsize)
+        self.comboBox_wsize = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox_wsize.setObjectName("comboBox_wsize")
+        self.comboBox_wsize.addItem("")
+        self.comboBox_wsize.addItem("")
+        self.comboBox_wsize.addItem("")
+        self.comboBox_wsize.addItem("")
+        self.comboBox_wsize.addItem("")
+        self.comboBox_wsize.addItem("")
+        self.horizontalLayout.addWidget(self.comboBox_wsize)
         self.params.addLayout(self.horizontalLayout, 4, 2, 1, 1)
         self.comboBox_conn = QtWidgets.QComboBox(self.centralwidget)
         font = QtGui.QFont()
@@ -567,9 +570,14 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "Window size (seconds)"))
         self.comboBox_input.setItemText(0, _translate("MainWindow", "EEG"))
         self.lineEdit_oscCH.setText(_translate("MainWindow", "9000"))
+        self.comboBox_wsize.setItemText(0, _translate("MainWindow", "3"))
+        self.comboBox_wsize.setItemText(1, _translate("MainWindow", "4"))
+        self.comboBox_wsize.setItemText(2, _translate("MainWindow", "5"))
+        self.comboBox_wsize.setItemText(3, _translate("MainWindow", "6"))
+        self.comboBox_wsize.setItemText(4, _translate("MainWindow", "7"))
+        self.comboBox_wsize.setItemText(5, _translate("MainWindow", "8"))
         self.comboBox_chn.setItemText(0, _translate("MainWindow", "one-to-one (e.g. Fp1 is only correlated with Fp1 and so on.)"))
         self.comboBox_chn.setItemText(1, _translate("MainWindow", "all-to-all (e.g. each channel is correlated with all the other available channels in the selection.)"))
-        self.lineEdit_wsize.setText(_translate("MainWindow", "3"))
         self.comboBox_conn.setItemText(0, _translate("MainWindow", "Coherence"))
         self.comboBox_conn.setItemText(1, _translate("MainWindow", "Imaginary Coherence"))
         self.comboBox_conn.setItemText(2, _translate("MainWindow", "Envelope Correlation"))
@@ -611,8 +619,9 @@ class Ui_MainWindow(object):
         self.actionstop_generating.setText(_translate("MainWindow", "stop generating"))
 
 class Mainprogram(QtWidgets.QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, app, *args, **kwargs):
         super(Mainprogram, self).__init__(*args, **kwargs)
+        app.aboutToQuit.connect(self._stop)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setup()
@@ -663,6 +672,15 @@ class Mainprogram(QtWidgets.QMainWindow):
 
         # initializing params
         self.fileMin, self.fileMax = None, None
+
+    def _stop(self):
+        """
+        stopping threads
+        """
+        if self.analysis:
+            self.analysis.stop()
+        if self.discovery:
+            self.discovery.stop()
 
     def _open_about(self):
         """
@@ -896,16 +914,14 @@ class Mainprogram(QtWidgets.QMainWindow):
         # device = self.comboBox_device.currentText()
         chn_type = self.ui.comboBox_chn.currentText()
         mode = self.ui.comboBox_conn.currentText()
-        window_size = self.ui.lineEdit_wsize.text()
-        # window_lag = self.ui.lineEdit_wlag.text()
-        window_lag = None
+        window_size = self.ui.comboBox_wsize.currentText()
 
         # weighted normalization
         norm_min = [float(x) for x in self.ui.label_normMin.text().split(', ')]
         norm_max = [float(x) for x in self.ui.label_normMax.text().split(', ')]
         device = None
 
-        return device, chn_type, mode, window_size, window_lag, norm_min, norm_max
+        return device, chn_type, mode, window_size, norm_min, norm_max
 
     def _openfile(self):
         """
@@ -948,7 +964,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         run the analysis
         """
-        device, chn_type, mode, window_size, window_lag, norm_min, norm_max = self._read_input()
+        device, chn_type, mode, window_size, norm_min, norm_max = self._read_input()
         IP, port = self._read_osc()
         # making sure first button was pressed
         if not hasattr(self, 'discovery'):
@@ -965,7 +981,7 @@ class Mainprogram(QtWidgets.QMainWindow):
                     self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
                                              corr_params=self.conn_params, OSC_params=[IP, port],
                                              compute_pow=self.ui.checkBox_pow.isChecked(),
-                                             window_params=[float(window_size), None],  # baseline lag not implemented
+                                             window_params=float(window_size),  # baseline lag not implemented
                                              norm_params=[norm_min, norm_max])
                     self.analysis.start()
                     n_freq, n_ppl = len(self.conn_params[0]), self._factorial(len(list(self.discovery.streams_by_uid.keys())),2)
@@ -992,7 +1008,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.comboBox_conn.setEnabled(bool)
         self.ui.comboBox_chn.setEnabled(bool)
         self.ui.comboBox_input.setEnabled(bool)
-        self.ui.lineEdit_wsize.setEnabled(bool)
+        self.ui.comboBox_wsize.setEnabled(bool)
         self.ui.lineEdit_oscCH.setEnabled(bool)
         self.ui.lineEdit_oscIP.setEnabled(bool)
         self.ui.checkBox_display.setEnabled(bool)
@@ -1074,7 +1090,7 @@ class Display(QtCore.QObject):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    Main = Mainprogram()
+    Main = Mainprogram(app)
     Main.show()
     sys.exit(app.exec_())
 

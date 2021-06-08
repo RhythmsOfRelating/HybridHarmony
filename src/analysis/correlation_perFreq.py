@@ -8,6 +8,7 @@ from itertools import islice
 from pylsl import local_clock
 from scipy.signal import hilbert
 from scipy.signal import lfilter
+from scipy.stats import zscore
 from astropy.stats import circmean
 from itertools import product
 from osc4py3.as_allthreads import *
@@ -18,18 +19,16 @@ warnings.filterwarnings("ignore")
 current = os.path.dirname(__file__)
 
 LAST_CALCULATION = local_clock()
-WINDOW = 3
 ORDER = 5
 
 class Correlation:
-    def __init__(self, sample_rate, channel_count, stream_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
-                 COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
+    def __init__(self, sample_rate, channel_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
+                 window_length, COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
         """
         Class computing connectivity values
 
         :param sample_rate: sampling rate
         :param channel_count: channel count
-        :param stream_count: number of streams under analysis
         :param mode: connectivity mode. See notes for options.
         :param chn_type: compute all electrode pairs if 'all-to-all';
                          alternatively, compute only corresponding electrode pairs if 'one-to-one'
@@ -54,9 +53,8 @@ class Correlation:
         """
         self.logger = logging.getLogger(__name__)
         self.sample_rate = sample_rate
-        self.sample_size = int(sample_rate * WINDOW)  # number of samples in the analysis window
+        self.window_length = window_length  # number of samples in the analysis window
         self.channel_count = channel_count
-        #self.buffers = buffers
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
         self.compute_pow = compute_pow
@@ -64,8 +62,6 @@ class Correlation:
         self.mode = mode
         self.chn_type = chn_type
         self.timestamp = None
-        #self._setup()
-        self.STREAM_COUNT = stream_count
         self.SAMPLE_RATE = self.sample_rate
         self.CHANNEL_COUNT = self.channel_count
         # read setup tools
@@ -77,13 +73,6 @@ class Correlation:
             self.OUTLET_POWER = OUTLET_POWER
         if OSC_params[0] is not None:
             self._setup_OSC()
-
-
-#    def _setup(self):
-        # moving global variables to class parameters
-#        self.STREAM_COUNT = len(self.buffers)
-#        self.SAMPLE_RATE = self.sample_rate
-#        self.CHANNEL_COUNT = self.channel_count
 
     def run(self, buffers):
         """
@@ -98,7 +87,7 @@ class Correlation:
             # select data for analysis based on the last timestamp
             analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
             # apply Hanning window
-            analysis_window = self._apply_window_weights(analysis_window)
+            # analysis_window = self._apply_window_weights(analysis_window)
             # band-pass filter and compute analytic signal
             analytic_matrix = self._calculate_all(analysis_window)
             # compute connectivity values
@@ -111,7 +100,6 @@ class Correlation:
             if self.OUTLET:
                 self.logger.warning("Sending {} R values with timestamp {}".format(len(rvalues), trailing_timestamp))
                 self.OUTLET.push_sample(rvalues, timestamp=trailing_timestamp)
-                # self.logger.warning('rvals='+str(rvalues))
             # sending OSC packets
             if self.OSC_params[0] is not None:  # if sending OSC
                 sample_size = self.CONNECTIONS * len(self.freqParams)
@@ -155,10 +143,9 @@ class Correlation:
         except:
             osch.terminate_all_channels()
             osc_udp_client(IP, int(port), "Rvalues")
-        sample_size = self.CONNECTIONS * len(self.freqParams)
-        # first message is empty
-        msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
-        osc_send(msg, 'Rvalues')
+        # first message is empty (removed this bc it's causing OSC msg to be all zeros)
+        # msg = oscbuildparse.OSCMessage("/Rvalues/me", ","+'f'*sample_size, [0]*sample_size)
+        # osc_send(msg, 'Rvalues')
 
     def _calculate_power(self, analytic_matrix):
         """
@@ -170,6 +157,7 @@ class Correlation:
 
     def _find_trailing_timestamp(self, buffers):
         trailing_timestamp = local_clock()
+
         for buffer in buffers.values():#self.buffers.values():
             timestamp, _ = buffer[-1]
             if trailing_timestamp > timestamp:
@@ -184,32 +172,21 @@ class Correlation:
         :return: a dictionary containing data. each value is a matrix of size (n_sample_size, n_channel_count)
         """
         analysis_window = {}
-        
+
         for uid, buffer in buffers.items():#self.buffers.items():
+
             # compute the sample start
             latest_sample_at, _ = buffer[-1]
             sample_offset = int(round((latest_sample_at - trailing_timestamp) * self.sample_rate))
-            sample_start = len(buffer) - self.sample_size - sample_offset
+            sample_start = len(buffer) - self.window_length - sample_offset
             if sample_start < 0:
                 self.logger.info("Not enough data to process in buffer {}, using dummy data".format(uid))
-                analysis_window[uid] = np.zeros((self.sample_size, self.channel_count))
+                analysis_window[uid] = np.zeros((self.window_length, self.channel_count))
             else:
                 # take data from buffer
-                timestamped_window = list(islice(buffer, sample_start, sample_start + self.sample_size))
+                timestamped_window = list(islice(buffer, sample_start, sample_start + self.window_length))
                 analysis_window[uid] = np.array([sample[1] for sample in timestamped_window])
-
         return analysis_window
-
-    def _calculate_analytic(self, signal, coeff):
-        """
-        filter a signal and then apply Hilbert Transform to generate the analytic signal
-        :param signal: a signal of any shape (matrix or list)
-        :param coeff: filtering coefficients
-        :return: analytic signal
-        """
-        signal = lfilter(coeff[0], coeff[1], signal)
-        analytic_signal = hilbert(signal)
-        return analytic_signal
 
     def _calculate_all(self, analysis_window):
         """
@@ -217,9 +194,8 @@ class Correlation:
         :param analysis_window: a dictionary containing data
         :return: a matrix of shape (n_freq_bands, n_subjects, n_channel_count, n_sample_size)
         """
-        all_analytic = np.array(list(analysis_window.values())).reshape((len(analysis_window), self.channel_count, -1))
-        all_analytic = np.array([self._calculate_analytic(all_analytic, coeff) for c, coeff in enumerate(self.COEFFICIENTS)])
-
+        all_analytic = zscore(np.swapaxes(np.array(list(analysis_window.values())),1,2), axis=-1)  # shape = (n_sub, n_chn, n_times)
+        all_analytic = np.array([hilbert(lfilter(coeff[0], coeff[1], all_analytic)) for c, coeff in enumerate(self.COEFFICIENTS)])
         return all_analytic
 
     # helper function
@@ -283,7 +259,7 @@ class Correlation:
             dphi = self._multiply_conjugate(c, s, transpose_axes=transpose_axes)
             con = np.abs(dphi) / np.sqrt(np.einsum('il,ik->ilk', np.nansum(amp, axis=2),
                                                             np.nansum(amp, axis=2)))
-
+            # self.logger.warning('con '+str(con[2,18:,0:18]))
         elif mode.lower() == 'imaginary coherence':
             c = np.real(complex_signal)
             s = np.imag(complex_signal)

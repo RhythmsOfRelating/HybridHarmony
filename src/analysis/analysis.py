@@ -11,6 +11,8 @@ from pylsl import local_clock, StreamInfo, StreamOutlet, IRREGULAR_RATE, cf_floa
 from scipy.signal import butter
 from itertools import product
 import numpy as np
+from itertools import islice
+from scipy.stats import zscore
 ORDER = 5
 WINDOW = 3
 
@@ -47,7 +49,7 @@ class Analysis:
     self.buffer = Buffer(discovery)
     self.OSC_params = OSC_params
     self.compute_pow = compute_pow
-    self.window_size, self.window_lag = window_params[0], window_params[1]
+    self.window_size = window_params
     self.norm_params = norm_params
     self.thread = None
     self.running = False
@@ -57,7 +59,7 @@ class Analysis:
     self.buffer.pull()  # pull data (once) in order to set up the following information
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
-    self.sample_size = int(self.sample_rate * WINDOW)  # number of samples in the analysis window
+    self.window_length = int(self.sample_rate * self.window_size)  # number of samples in the analysis window
     self.STREAM_COUNT = len(self.buffer.buffers_by_uid)  # number of streams
     self.COEFFICIENTS = self._setup_coefficients()  # band-pass filtering coefficients
     self.HANN = self._setup_hann()  # Hanning window coefficients
@@ -67,20 +69,23 @@ class Analysis:
       self.OUTLET_POWER = self._setup_outlet_power()
     else:
       self.OUTLET_POWER = None
+
+    # create the correlation object with all parameters (besides the incoming data)
     self.corr = Correlation(
       sample_rate=self.sample_rate,
       channel_count=self.channel_count,
-      stream_count = len(self.buffer.buffers_by_uid),
       mode=self.mode,
       chn_type=self.chn_type,
       corr_params=self.corr_params,
       OSC_params=self.OSC_params,
       compute_pow=self.compute_pow,
       norm_params=self.norm_params,
+      window_length=self.window_length,
       COEFFICIENTS=self.COEFFICIENTS,
       HANN=self.HANN,
       CONNECTIONS=self.CONNECTIONS,
       OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER)
+
   def start(self):
     """
     Start thread for analysis, while saving the output of self._update to the que parameter
@@ -91,10 +96,8 @@ class Analysis:
       target=self._update,
       name="analysis",
       args=[self.que],
+      daemon=True  # does this solve thread quiting issue?
     )
-    # self.thread = Thread(target=lambda q, args1: q.put(self._update()),
-    #                      args=(self.que, None), daemon=True, name="Buffering")
-    # self.thread = Thread(target=self._update, daemon=True, name="Buffering")
     self.running = True
     self.thread.start()
 
@@ -122,9 +125,14 @@ class Analysis:
     while self.running:
       try:
         self.buffer.pull()
+        # self.logger.warning(str(list(self.buffer.buffers_by_uid.keys())))
+        # samples0 = list(islice(self.buffer.buffers_by_uid[list(self.buffer.buffers_by_uid.keys())[0]],0,10))
+        # samples1 = list(islice(self.buffer.buffers_by_uid[list(self.buffer.buffers_by_uid.keys())[1]], 0, 10))
+        # self.logger.warning(samples0)
+        # self.logger.warning(samples1)
         r = self._calculate()
         if r:
-          que.put(r)
+          que.put(["{:.4f}".format(a_float) for a_float in r])
       except Exception as e:
         self.logger.warning("Error during analysis, skipped frame "+str(e))
         self.logger.exception(e)
@@ -142,7 +150,7 @@ class Analysis:
     if not self.sample_rate or not self.channel_count:
       self.logger.warning('connection broken.')
       return
-
+    # running correlation with incoming data
     r = self.corr.run(self.buffer.buffers_by_uid)
     return r
 
@@ -207,9 +215,9 @@ class Analysis:
     set up Hanning window
     :return: Hanning coefficients
     """
-    denom = self.sample_size - 1
+    denom = self.window_length - 1
     hann = []
-    for n in range(self.sample_size):
+    for n in range(self.window_length):
       hann.append(.5 * (1 - np.cos((2 * np.pi * n) / denom)))
 
     return np.array(hann)

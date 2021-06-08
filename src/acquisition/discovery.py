@@ -70,7 +70,8 @@ class Discovery:
 
     # iterate for each stream
     for stream_info in streams_info:
-      uid = stream_info.source_id() if stream_info.source_id() else stream_info.uid()  # retrieve 'source_id'
+      # uid = stream_info.source_id() if stream_info.source_id() else stream_info.uid()  # retrieve 'source_id'
+      uid = stream_info.source_id() + ' | ' +stream_info.uid()
       streams_active.append(uid)
 
       # if the current stream has not been saved, then connect to the current stream
