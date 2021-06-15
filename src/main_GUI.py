@@ -710,8 +710,12 @@ class Mainprogram(QtWidgets.QMainWindow):
                 minn = [w/100 * float(self.ui.lineEdit_manMin.text()) + (100-w)/100 * m for m in filemins]
                 maxx = [w/100 * float(self.ui.lineEdit_manMax.text()) + (100-w)/100 * m for m in filemaxs]
             else:
-                minn = [w/100 * float(self.ui.lineEdit_manMin.text())] * 3  # TODO
-                maxx = [w/100 * float(self.ui.lineEdit_manMax.text())] * 3
+                n_freq = 0
+                for i in range(self.ui.freqTable.rowCount()):
+                    if self.ui.freqTable.item(i, 0):
+                        n_freq += 1
+                minn = [w/100 * float(self.ui.lineEdit_manMin.text())] * n_freq
+                maxx = [w/100 * float(self.ui.lineEdit_manMax.text())] * n_freq
             self.ui.label_normMax.setText(', '.join(["%.2f" % l for l in list(maxx)]))
             self.ui.label_normMin.setText(', '.join(["%.2f" % l for l in list(minn)]))
         except Exception as e:
@@ -812,7 +816,8 @@ class Mainprogram(QtWidgets.QMainWindow):
 
         self.ui.infoTable.setColumnCount(len(cols))
         self.ui.infoTable.setHorizontalHeaderLabels(cols)
-
+        # update normalization texts
+        self._weightslider()
         # discover streams
         self.ui.infoTable.setRowCount(0)
         self.discovery = Discovery(
