@@ -8,6 +8,8 @@ Please refer to
 
 When you use our software, please credit us :) you can add "Courtesy Harmonic Dissonance, 2010-present" and/or cite the paper linked above.
 
+If you are interested in our project for specifiic applications, please contact Suzanne at sdikker at gmail dot com
+
 # Requirements
 - [Python >= 3.6](https://www.python.org/downloads/)
 
