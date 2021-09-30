@@ -6,9 +6,9 @@ Please refer to
 * [Software Modules](https://github.com/RhythmsOfRelating/HybridHarmony/wiki/Software-Modules) for explanation of the backend
 * [This paper](https://www.frontiersin.org/articles/10.3389/fnrgo.2021.687108/full) for an in-depth description of the project
 
-When you use our software, please credit us :) you can add "Courtesy Harmonic Dissonance, 2010-present" and/or cite the paper linked above.
+When you use our software for your research or art project, please credit us :) you can add "Courtesy Harmonic Dissonance, 2010-present" and/or cite the paper linked above.
 
-If you are interested in our project for specifiic applications, please contact Suzanne at sdikker at gmail dot com
+If you are interested in our project for specific applications, please contact Suzanne at sdikker at gmail dot com
 
 # Requirements
 - [Python >= 3.6](https://www.python.org/downloads/)
