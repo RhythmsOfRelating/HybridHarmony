@@ -23,7 +23,7 @@ ORDER = 5
 
 class Correlation:
     def __init__(self, sample_rate, channel_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
-                 window_length, COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER):
+                 window_length, COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER, OUTLET_TRIGGER):
         """
         Class computing connectivity values
 
@@ -41,6 +41,7 @@ class Correlation:
         :param CONNECTIONS: number of connections
         :param OUTLET: StreamOutlet object for connectivity value output
         :param OUTLET_POWER: StreamOutlet object for power value output
+        :param OUTLET_TRIGGER: StreamOutlet object for trigger output
 
         Note:
         **supported connectivity measures**
@@ -69,6 +70,7 @@ class Correlation:
         self.HANN = HANN
         self.CONNECTIONS = CONNECTIONS
         self.OUTLET = OUTLET
+        self.OUTLET_TRIGGER = OUTLET_TRIGGER
         if self.compute_pow:
             self.OUTLET_POWER = OUTLET_POWER
         if OSC_params[0] is not None:
@@ -110,6 +112,14 @@ class Correlation:
         else:
             self.logger.debug("Still waiting for new data to arrive, skipping analysis")
             return
+    def send_trigger(self, id):
+        """
+        send trigger 'k'
+        Args:
+            k: trigger ID
+        """
+        self.logger.warning('called trigger')
+        self.OUTLET_TRIGGER.push_sample([int(id)], timestamp=local_clock())
 
     def _clamp(self, n):
         """
