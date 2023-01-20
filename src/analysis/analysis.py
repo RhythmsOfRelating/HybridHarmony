@@ -65,6 +65,7 @@ class Analysis:
     self.HANN = self._setup_hann()  # Hanning window coefficients
     self.CONNECTIONS = self._setup_num_connections()  # number of connections
     self.OUTLET = self._setup_outlet()  # connectivity value outlet
+    self.OUTLET_TRIGGER = self._setup_outlet_trigger()  # trigger outlet
     if self.compute_pow:  # if sending power values, then set up power value outlet
       self.OUTLET_POWER = self._setup_outlet_power()
     else:
@@ -84,7 +85,8 @@ class Analysis:
       COEFFICIENTS=self.COEFFICIENTS,
       HANN=self.HANN,
       CONNECTIONS=self.CONNECTIONS,
-      OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER)
+      OUTLET=self.OUTLET, OUTLET_POWER=self.OUTLET_POWER,
+      OUTLET_TRIGGER=self.OUTLET_TRIGGER)
 
   def start(self):
     """
@@ -116,6 +118,9 @@ class Analysis:
     self.thread = None
 
     return True
+
+  def trigger(self, id):
+    self.corr.send_trigger(id)
 
   def _update(self, que):
     """
@@ -178,6 +183,15 @@ class Analysis:
         .append_child_value("from", buffer_keys[pair[0]]) \
         .append_child_value("to", buffer_keys[pair[1]])
 
+    return StreamOutlet(info)
+
+  def _setup_outlet_trigger(self):
+    """
+    Setting up LSL outlet for triggers
+    :return: StreamOutlet object
+    """
+    info = StreamInfo(name='TriggerStream', type='Markers', channel_count=1, channel_format='int32',
+                      source_id= "Triggers-{}".format(getpid()))
     return StreamOutlet(info)
 
   def _setup_outlet_power(self):
