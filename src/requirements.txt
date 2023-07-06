@@ -7,4 +7,4 @@ PyQt5==5.13.2
 PyQt5-sip==12.8.0
 PyQt5-stubs==5.14.2.2
 pyqt5-tools==5.13.2.1.6rc1
-scipy==1.4.1
+scipy==1.10.0
