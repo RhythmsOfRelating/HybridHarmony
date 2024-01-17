@@ -322,13 +322,21 @@ class Correlation:
         for pair in pair_index:
             con = np.abs(self.compute_sync(analytic_matrix[:, pair, :, :], mode))
             # the connectivity matrix for the current pair. shape is (n_freq, n_ch, n_ch)
-            con = con[:, 0:self.channel_count, self.channel_count:]
+            if self.input_type == 'Daisy-chained Biosemi':
+                con = con[:, 0:32, 32:]
+            else:
+                con = con[:, 0:self.channel_count, self.channel_count:]
             if 'all-to-all' in self.chn_type:  # all to all correlation
                 result = [np.nanmean(con[i, self.chnParams[freq]][:, self.chnParams[freq]], axis=(0, 1))
                           for i, freq in enumerate(self.freqParams.keys())]
             else:  # channel to channel correlation
-                result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]])
-                          for i, freq in enumerate(self.freqParams.keys())]
+                if self.input_type == 'Daisy-chained Biosemi':
+                    # no specific channel selection for daisy chained
+                    result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1))
+                              for i, freq in enumerate(self.freqParams.keys())]
+                else:
+                    result = [np.nanmean(np.diagonal(con[i], axis1=0, axis2=1)[self.chnParams[freq]])
+                              for i, freq in enumerate(self.freqParams.keys())]
             # adjust result according to weight parameters
             weights = list(self.weightParams.values())
             result = [r*weight for r, weight in zip(result, weights)]
