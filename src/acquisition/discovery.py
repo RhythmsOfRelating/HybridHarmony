@@ -18,6 +18,7 @@ class Discovery:
     self.options = options
     self.sample_rate = None
     self.channel_count = None
+    self.channel_names = None
     self.streams_by_uid = {}
     self.running = False
     self.thread = None
@@ -71,7 +72,7 @@ class Discovery:
     # iterate for each stream
     for stream_info in streams_info:
       # uid = stream_info.source_id() if stream_info.source_id() else stream_info.uid()  # retrieve 'source_id'
-      uid = stream_info.source_id() + ' | ' +stream_info.uid()
+      uid = stream_info.source_id() + ' | ' + stream_info.uid()
       streams_active.append(uid)
 
       # if the current stream has not been saved, then connect to the current stream
@@ -117,6 +118,7 @@ class Discovery:
       if len(self.streams_by_uid) == 0:
         self.sample_rate = stream.sample_rate
         self.channel_count = stream.channel_count
+        self.channel_names = stream.channel_names
         self.logger.info("{}: Elected master stream at {}hz with {} channels".format(stream.name, stream.sample_rate, stream.channel_count))
 
       self.streams_by_uid[uid] = stream

@@ -17,10 +17,12 @@ ORDER = 5
 WINDOW = 3
 
 class Analysis:
-  def __init__(self, discovery, mode, chn_type, corr_params, OSC_params, compute_pow, window_params, norm_params):
+  def __init__(self, discovery, input_type, mode, chn_type, corr_params, OSC_params, compute_pow, window_params, norm_params):
     """
     Class performing connectivity analysis
     :param discovery: Discovery object for retrieving incoming data chunks
+    :param input_type: currently supports "EEG" (two streams of generic EEG devices) or "Daisy-chained Biosemi"
+    (one stream separated into Box1 and Box2 channels)
     :param mode: connectivity analysis mode. Refer to notes for supported modes
     :param chn_type: compute all electrode pairs if 'all-to-all';
                       alternatively, compute only corresponding electrode pairs if 'one-to-one'
@@ -42,6 +44,7 @@ class Analysis:
     # setting up parameters
     self.logger = logging.getLogger(__name__)
     self.discovery = discovery
+    self.input_type = input_type
     self.mode = mode
     self.chn_type = chn_type
     self.corr_params = corr_params
@@ -59,6 +62,7 @@ class Analysis:
     self.buffer.pull()  # pull data (once) in order to set up the following information
     self.sample_rate = self.discovery.sample_rate
     self.channel_count = self.discovery.channel_count
+    self.channel_names = self.discovery.channel_names
     self.window_length = int(self.sample_rate * self.window_size)  # number of samples in the analysis window
     self.STREAM_COUNT = len(self.buffer.buffers_by_uid)  # number of streams
     self.COEFFICIENTS = self._setup_coefficients()  # band-pass filtering coefficients
@@ -75,8 +79,10 @@ class Analysis:
     self.corr = Correlation(
       sample_rate=self.sample_rate,
       channel_count=self.channel_count,
+      channel_names=self.channel_names,
       mode=self.mode,
       chn_type=self.chn_type,
+      input_type=self.input_type,
       corr_params=self.corr_params,
       OSC_params=self.OSC_params,
       compute_pow=self.compute_pow,
@@ -174,7 +180,10 @@ class Analysis:
     info.desc().append_child_value("correlation", "R")
     mappings = info.desc().append_child("mappings")
     # in the 'mapping' field, save the IDs of the pair in each connection
-    buffer_keys = list(self.buffer.buffers_by_uid.keys())
+    if self.input_type == 'Daisy-chained Biosemi':
+      buffer_keys = ['Box1', 'Box2']
+    else:
+      buffer_keys = list(self.buffer.buffers_by_uid.keys())
     pair_index = [a for a in
                   list(product(np.arange(0, len(buffer_keys)), np.arange(0, len(buffer_keys))))
                   if a[0] < a[1]]
@@ -241,4 +250,7 @@ class Analysis:
     calculate the number of connections given the number of streams (subjects)
     :return: number of connections
     """
-    return sum(list(range(1, len(self.buffer.buffers_by_uid))))
+    if self.input_type == 'Daisy-chained Biosemi':
+      return 1
+    else:
+      return sum(list(range(1, len(self.buffer.buffers_by_uid))))

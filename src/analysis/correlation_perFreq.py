@@ -3,7 +3,7 @@ Correlation module calculating connectivity values from data
 """
 import logging
 import numpy as np
-import os
+import os, re
 from itertools import islice
 from pylsl import local_clock
 from scipy.signal import hilbert
@@ -22,7 +22,7 @@ LAST_CALCULATION = local_clock()
 ORDER = 5
 
 class Correlation:
-    def __init__(self, sample_rate, channel_count, mode, chn_type, corr_params, OSC_params, compute_pow, norm_params,
+    def __init__(self, sample_rate, channel_count, channel_names, mode, chn_type, input_type, corr_params, OSC_params, compute_pow, norm_params,
                  window_length, COEFFICIENTS, HANN, CONNECTIONS, OUTLET, OUTLET_POWER, OUTLET_TRIGGER):
         """
         Class computing connectivity values
@@ -56,12 +56,14 @@ class Correlation:
         self.sample_rate = sample_rate
         self.window_length = window_length  # number of samples in the analysis window
         self.channel_count = channel_count
+        self.channel_names = channel_names
         self.freqParams, self.chnParams, self.weightParams = corr_params
         self.OSC_params = OSC_params
         self.compute_pow = compute_pow
         self.norm_min, self.norm_max = norm_params
         self.mode = mode
         self.chn_type = chn_type
+        self.input_type = input_type
         self.timestamp = None
         self.SAMPLE_RATE = self.sample_rate
         self.CHANNEL_COUNT = self.channel_count
@@ -76,6 +78,10 @@ class Correlation:
         if OSC_params[0] is not None:
             self._setup_OSC()
 
+    def matches_pattern(self, string, label):
+        pattern = r'A\d*_'+label
+        return bool(re.match(pattern, string))
+
     def run(self, buffers):
         """
         running the analysis
@@ -87,9 +93,16 @@ class Correlation:
         if trailing_timestamp != LAST_CALCULATION:
             LAST_CALCULATION = trailing_timestamp
             # select data for analysis based on the last timestamp
-            analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
-            # apply Hanning window
-            # analysis_window = self._apply_window_weights(analysis_window)
+            raw_analysis_window = self._select_analysis_window(trailing_timestamp, buffers)
+            # daisy-chained split
+            if self.input_type == 'Daisy-chained Biosemi':
+                analysis_window = {}
+                chns_box1 = [j for j,c in enumerate(self.channel_names) if self.matches_pattern(c, 'Box1')]
+                analysis_window['Box1'] = list(raw_analysis_window.values())[0][:,chns_box1]
+                chns_box2 = [j for j,c in enumerate(self.channel_names) if self.matches_pattern(c, 'Box2')]
+                analysis_window['Box2'] = list(raw_analysis_window.values())[0][:,chns_box2]
+            elif self.input_type == 'EEG':
+                analysis_window = raw_analysis_window.copy()
             # band-pass filter and compute analytic signal
             analytic_matrix = self._calculate_all(analysis_window)
             # compute connectivity values
@@ -112,6 +125,7 @@ class Correlation:
         else:
             self.logger.debug("Still waiting for new data to arrive, skipping analysis")
             return
+
     def send_trigger(self, id):
         """
         send trigger 'k'
@@ -183,7 +197,7 @@ class Correlation:
         """
         analysis_window = {}
 
-        for uid, buffer in buffers.items():#self.buffers.items():
+        for uid, buffer in buffers.items():  #self.buffers.items():
 
             # compute the sample start
             latest_sample_at, _ = buffer[-1]

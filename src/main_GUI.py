@@ -11,6 +11,8 @@ import os, traceback
 from math import factorial
 import sys
 import os.path as path
+import winsound
+
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
@@ -554,7 +556,9 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.actiongenerate_random_data = QtWidgets.QAction(MainWindow)
+        self.actiongenerate_biosemi = QtWidgets.QAction(MainWindow)
         self.actiongenerate_random_data.setObjectName("actiongenerate_random_data")
+        self.actiongenerate_biosemi.setObjectName("actiongenerate_biosemi")
         self.actionplay_a_sample_recording_as_test_data = QtWidgets.QAction(MainWindow)
         self.actionplay_a_sample_recording_as_test_data.setObjectName("actionplay_a_sample_recording_as_test_data")
         self.actionstop_generating = QtWidgets.QAction(MainWindow)
@@ -565,6 +569,7 @@ class Ui_MainWindow(object):
         self.action_about.setObjectName('action_about')
         self.menusupport.addSeparator()
         self.menusupport.addAction(self.actiongenerate_random_data)
+        self.menusupport.addAction(self.actiongenerate_biosemi)
         self.menusupport.addAction(self.actionplay_a_sample_recording_as_test_data)
         self.menusupport.addAction(self.actionstop_generating)
         self.menubar.addAction(self.menusupport.menuAction())
@@ -589,7 +594,8 @@ class Ui_MainWindow(object):
         self.label_input.setText(_translate("MainWindow", "Input type"))
         self.lineEdit_oscIP.setText(_translate("MainWindow", "10.0.0.24"))
         self.label_7.setText(_translate("MainWindow", "Window size (seconds)"))
-        self.comboBox_input.setItemText(0, _translate("MainWindow", "EEG"))
+        self.comboBox_input.setItemText(1, _translate("MainWindow", "EEG"))
+        self.comboBox_input.setItemText(0, _translate("MainWindow", "Daisy-chained Biosemi"))  # daisy-chained
         self.lineEdit_oscCH.setText(_translate("MainWindow", "9000"))
         self.comboBox_wsize.setItemText(0, _translate("MainWindow", "3"))
         self.comboBox_wsize.setItemText(1, _translate("MainWindow", "4"))
@@ -634,6 +640,7 @@ class Ui_MainWindow(object):
         self.btn_stop.setText(_translate("MainWindow", "stop analysis"))
         self.menusupport.setTitle(_translate("MainWindow", "Tools"))
         self.actiongenerate_random_data.setText(_translate("MainWindow", "play a random signal for testing"))
+        self.actiongenerate_biosemi.setText(_translate("MainWindow", "play a daisy-chained Biosemi signal for testing"))
         self.actionplay_a_sample_recording_as_test_data.setText(_translate("MainWindow", "play a sample recording for testing"))
         self.action_help.setText(_translate("MainWindow", "Help"))
         self.action_about.setText(_translate("MainWindow", "About"))
@@ -684,6 +691,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.checkBox_osc.toggled.connect(self.ui.lineEdit_oscIP.setEnabled)
         self.ui.checkBox_osc.toggled.connect(self.ui.lineEdit_oscCH.setEnabled)
         self.ui.actiongenerate_random_data.triggered.connect(self._run_generate_random_samples)
+        self.ui.actiongenerate_biosemi.triggered.connect(self._run_generate_biosemi)
         self.ui.actionplay_a_sample_recording_as_test_data.triggered.connect(self._run_generate_xdf_samples)
         self.ui.actionstop_generating.triggered.connect(self._stop_generating)
         self.ui.action_help.triggered.connect(self._open_help)
@@ -749,6 +757,8 @@ class Mainprogram(QtWidgets.QMainWindow):
     def sendTrigger1(self):
         self.ui.param_check.append("trigger \'1\' sent.")
         self.analysis.trigger(1)
+        winsound.Beep(261, 1000)
+
     def sendTrigger2(self):
         self.ui.param_check.append("trigger \'2\' sent.")
         self.analysis.trigger(2)
@@ -810,6 +820,19 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.run_samples = SampleGeneration('random')
         self.run_samples.start()
         self.ui.actiongenerate_random_data.setEnabled(False)  # gray out the button
+        self.ui.actiongenerate_biosemi.setEnabled(False)
+        self.ui.actionplay_a_sample_recording_as_test_data.setEnabled(False)
+        self.ui.actionstop_generating.setVisible(True)
+        self.ui.param_check.append('Sending random samples for testing...')
+
+    def _run_generate_biosemi(self):
+        """
+        thread to run testing samples
+        """
+        self.run_samples = SampleGeneration('biosemi')
+        self.run_samples.start()
+        self.ui.actiongenerate_random_data.setEnabled(False)  # gray out the button
+        self.ui.actiongenerate_biosemi.setEnabled(False)
         self.ui.actionplay_a_sample_recording_as_test_data.setEnabled(False)
         self.ui.actionstop_generating.setVisible(True)
         self.ui.param_check.append('Sending random samples for testing...')
@@ -821,6 +844,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.run_samples = SampleGeneration('sample')
         self.run_samples.start()
         self.ui.actiongenerate_random_data.setEnabled(False)  # gray out the button
+        self.ui.actiongenerate_biosemi.setEnabled(False)
         self.ui.actionplay_a_sample_recording_as_test_data.setEnabled(False)
         self.ui.actionstop_generating.setVisible(True)
         self.ui.param_check.append('Sending a sample recording for testing...')
@@ -831,6 +855,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         self.run_samples.stop()
         self.ui.actiongenerate_random_data.setEnabled(True)
+        self.ui.actiongenerate_biosemi.setEnabled(True)
         self.ui.actionplay_a_sample_recording_as_test_data.setEnabled(True)
         self.ui.actionstop_generating.setVisible(False)
         self.ui.param_check.append('Stopped sending samples.')
@@ -951,13 +976,14 @@ class Mainprogram(QtWidgets.QMainWindow):
         chn_type = self.ui.comboBox_chn.currentText()
         mode = self.ui.comboBox_conn.currentText()
         window_size = self.ui.comboBox_wsize.currentText()
+        input_type = self.ui.comboBox_input.currentText()
 
         # weighted normalization
         norm_min = [float(x) for x in self.ui.label_normMin.text().split(', ')]
         norm_max = [float(x) for x in self.ui.label_normMax.text().split(', ')]
         device = None
 
-        return device, chn_type, mode, window_size, norm_min, norm_max
+        return device, chn_type, mode, window_size, input_type, norm_min, norm_max
 
     def _openfile(self):
         """
@@ -1000,7 +1026,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         run the analysis
         """
-        device, chn_type, mode, window_size, norm_min, norm_max = self._read_input()
+        device, chn_type, mode, window_size, input_type, norm_min, norm_max = self._read_input()
         IP, port = self._read_osc()
         # making sure first button was pressed
         if not hasattr(self, 'discovery'):
@@ -1014,13 +1040,16 @@ class Mainprogram(QtWidgets.QMainWindow):
             if not self.ui.btn_loadStreams.isEnabled():
                 try:
                     # starting analysis
-                    self.analysis = Analysis(discovery=self.discovery, mode=mode, chn_type=chn_type,
+                    self.analysis = Analysis(discovery=self.discovery, input_type=input_type, mode=mode, chn_type=chn_type,
                                              corr_params=self.conn_params, OSC_params=[IP, port],
                                              compute_pow=self.ui.checkBox_pow.isChecked(),
                                              window_params=float(window_size),  # baseline lag not implemented
                                              norm_params=[norm_min, norm_max])
                     self.analysis.start()
-                    n_freq, n_ppl = len(self.conn_params[0]), self._factorial(len(list(self.discovery.streams_by_uid.keys())),2)
+                    if input_type == 'Daisy-chained Biosemi':
+                        n_freq, n_ppl = len(self.conn_params[0]), 1
+                    else:
+                        n_freq, n_ppl = len(self.conn_params[0]), self._factorial(len(list(self.discovery.streams_by_uid.keys())),2)
                     self.ui.param_check.append("Sending connectivity values for %s frequency bands and %s pairs...\n" % (n_freq,n_ppl))
                     # update state variable and buttons
                     self.analysis_running = True
@@ -1112,7 +1141,6 @@ class Display(QtCore.QObject):
     def do_display(self):
         while self.continue_run:  # give the loop a stoppable condition
             try:
-                # time.sleep(0.3)
                 self.progress.emit(self.que.get())
             except:
                 traceback.print_exc()

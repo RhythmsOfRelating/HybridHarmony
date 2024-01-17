@@ -51,7 +51,7 @@ class SampleGeneration:
               uid = str(colors[num]) + '-' + id
               info = StreamInfo('EEG-{}'.format(uid), 'EEG', RANDOM_CHN, self.sample_rate, 'float32', uid)
               self.outlets.append(StreamOutlet(info))
-      else:
+      elif self.mode == "sample":
           # filepath = self.resource_path('support/session_2020_02_21_14_21_11_anticipation.xdf')  # TODO
           filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'session_2020_02_21_14_21_11_anticipation.xdf')
           raw_file = load_xdf(filepath, synchronize_clocks=False, dejitter_timestamps=False, verbose=False)[0]
@@ -62,7 +62,37 @@ class SampleGeneration:
               info = StreamInfo(person['info']['name'][0], person['info']['type'][0],
                                 int(person['info']['channel_count'][0]),
                                 int(person['info']['nominal_srate'][0]), person['info']['channel_format'][0], id[0])
+              # add channels
+              try:
+                  channels_to_add = [x['label'][0] for x in person['info']['desc'][0]['channels'][0]['channel']]
+                  chns = info.desc().append_child("channels")
+                  for label in channels_to_add:
+                      ch = chns.append_child("channel")
+                      ch.append_child_value("label", label)
+                      ch.append_child_value("unit", "microvolts")
+                      ch.append_child_value("type", "EEG")
+              except:
+                  pass
               self.outlets.append(StreamOutlet(info))
+      elif self.mode == 'biosemi':
+          filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'daisychained_biosemi.xdf')
+          raw_file = load_xdf(filepath, synchronize_clocks=False, dejitter_timestamps=False, verbose=False)[0]
+          person = raw_file[0]
+          # defining output streams
+          id = person['info']['source_id']
+          info = StreamInfo(person['info']['name'][0], person['info']['type'][0],
+                            int(person['info']['channel_count'][0]),
+                            int(person['info']['nominal_srate'][0]), person['info']['channel_format'][0], id[0])
+          # add channels
+          channels_to_add = [x['label'][0] for x in person['info']['desc'][0]['channels'][0]['channel']]
+          meta_channels = info.desc().append_child('channels')
+          for channel in channels_to_add:
+              meta_channels.append_child('channel') \
+                  .append_child_value('label', channel) \
+                  .append_child_value('unit', 'microvolts') \
+                  .append_child_value('type', 'EEG')
+          self.outlets.append(StreamOutlet(info))
 
 
   def _update(self):
@@ -73,7 +103,7 @@ class SampleGeneration:
                 sample = list(np.random.rand(RANDOM_CHN))
                 outlet.push_sample(sample, timestamp=ts)
             time.sleep(1.0 / self.sample_rate)
-        else:
+        elif self.mode == 'sample':
             # filepath = self.resource_path('support/session_2020_02_21_14_21_11_anticipation.xdf')  # TODO
             filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'session_2020_02_21_14_21_11_anticipation.xdf')
@@ -92,6 +122,24 @@ class SampleGeneration:
                 for subject, outlet in enumerate(self.outlets):
                     outlet.push_sample(data[subject][:, i], timestamp=ts)
                 time.sleep(0.004)
+        elif self.mode == 'biosemi':
+            # filepath = self.resource_path('support/session_2020_02_21_14_21_11_anticipation.xdf')  # TODO
+            filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    'daisychained_biosemi.xdf')
+            raw_file = load_xdf(filepath, synchronize_clocks=False, dejitter_timestamps=False, verbose=False)[0]
+            # defining output streams
+            data = []
+            for i, person in enumerate(raw_file):
+                id = person['info']['source_id']
+                raw = person['time_series'].T
+                data.append(raw)
+            print("now sending data...")
+            length = min([d.shape[1] for d in data])
+            for i in range(length):
+                ts = local_clock()
+                for subject, outlet in enumerate(self.outlets):
+                    outlet.push_sample(data[subject][:, i], timestamp=ts)
+                time.sleep(1/int(person['info']['nominal_srate'][0]))
 
   def resource_path(self, relative_path):
       if hasattr(sys, '_MEIPASS'):
