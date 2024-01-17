@@ -21,11 +21,11 @@ If you are interested in our project for specific applications, please contact S
 
 - For developers and Mac users, refer to the following steps:
 
-1. When using git: Clone the repository.
+1. When using git: Clone the repository's "devel-PC" branch
 ```shell
-$ git clone https://github.com/RhythmsOfRelating/HybridHarmony.git
+$ git clone -b devel-PC https://github.com/RhythmsOfRelating/HybridHarmony.git
 ```
-2. (Old)After downloading Python3.x, open Terminal (MacOS) or Command Prompt (Windows) and direct to `LSLanalysis` directory, and install `pipenv`:
+2. (Old)After downloading Python3.x, open Terminal (MacOS) or Command Prompt (Windows) and direct to `HybridHarmony` directory, and install `pipenv`:
 ```shell
 $ pip install pipenv
 ```
@@ -52,7 +52,7 @@ $ python -m pipx ensurepath
 
 3. Inside the `LSLanalysis` directory, install the dependencies:
 ```shell
-$ pipenv install
+$ pipenv install -r requirements.txt
 ```
 4. Activate the virual environment:
 ```shell
