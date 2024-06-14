@@ -226,6 +226,24 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.line)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.label_8 = QtWidgets.QLabel(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_8.setFont(font)
+        self.label_8.setObjectName("label_8")
+        self.verticalLayout_2.addWidget(self.label_8)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.trigger1 = QtWidgets.QPushButton(self.centralwidget)
+        self.trigger1.setObjectName("trigger1")
+        self.horizontalLayout_6.addWidget(self.trigger1)
+        self.trigger2 = QtWidgets.QPushButton(self.centralwidget)
+        self.trigger2.setObjectName("trigger2")
+        self.horizontalLayout_6.addWidget(self.trigger2)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_6)
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Calibri")
@@ -563,6 +581,9 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Input data streams"))
         self.btn_loadStreams.setToolTip(_translate("MainWindow", "detect LSL streams for analysis. Streams should be displayed on the table above."))
         self.btn_loadStreams.setText(_translate("MainWindow", "1. load LSL streams"))
+        self.label_8.setText(_translate("MainWindow", "Trigger buttons"))
+        self.trigger1.setText(_translate("MainWindow", "1"))
+        self.trigger2.setText(_translate("MainWindow", "2"))
         self.label_5.setText(_translate("MainWindow", "Parameters"))
         self.label_oscPort.setText(_translate("MainWindow", "OSC port (optional) "))
         self.label_input.setText(_translate("MainWindow", "Input type"))
@@ -640,6 +661,8 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.btn_stop.setEnabled(False)
         self.ui.checkBox_osc.setChecked(True)
         self.ui.checkBox_pow.setChecked(False)
+        self.ui.trigger2.setEnabled(False)
+        self.ui.trigger1.setEnabled(False)
         self.p = None
         self.ui.actionstop_generating.setVisible(False)
 
@@ -665,6 +688,8 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.actionstop_generating.triggered.connect(self._stop_generating)
         self.ui.action_help.triggered.connect(self._open_help)
         self.ui.action_about.triggered.connect(self._open_about)
+        self.ui.trigger2.clicked.connect(self.sendTrigger2)
+        self.ui.trigger1.clicked.connect(self.sendTrigger1)
         # getting value changed signal
         self.ui.horizontalSlider_normweight.valueChanged.connect(self._weightslider)
         self.ui.lineEdit_manMax.textChanged.connect(self._weightslider)
@@ -721,6 +746,13 @@ class Mainprogram(QtWidgets.QMainWindow):
         except Exception as e:
             self.ui.param_check.append(str(e))
 
+    def sendTrigger1(self):
+        self.ui.param_check.append("trigger \'1\' sent.")
+        self.analysis.trigger(1)
+    def sendTrigger2(self):
+        self.ui.param_check.append("trigger \'2\' sent.")
+        self.analysis.trigger(2)
+
     def play_display(self):
         """
         set up a thread for displaying connectivity values in real time
@@ -743,7 +775,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         display connectivity values
         """
-        self.ui.rval_display.append(str(r))
+        self.ui.rval_display.append(' '.join(r))
 
     def fun_unlock(self):
         """
@@ -751,7 +783,6 @@ class Mainprogram(QtWidgets.QMainWindow):
         """
         if self.analysis_running:  # stop analysis if running
             self.fun_stop()
-
         # reset buttons
         self.ui.btn_loadStreams.setEnabled(True)
         # unlock tables
@@ -975,7 +1006,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         if not hasattr(self, 'discovery'):
             self.ui.param_check.append('Please make sure EEG streams have been loaded first.\n')
         # making sure input is not empty
-        elif len(list(self.discovery.streams_by_uid.keys()))<1:
+        elif len(list(self.discovery.streams_by_uid.keys())) < 1:
             self.ui.param_check.append('Please make sure EEG streams have been loaded first.\n')
         else:
             self.fun_retrieve_params()
@@ -998,7 +1029,7 @@ class Mainprogram(QtWidgets.QMainWindow):
                     if self.ui.checkBox_display.isChecked():
                         self.play_display()
                 except Exception as e:
-                    self.ui.param_check.append('Error with analysis. The Error message is:'\
+                    self.ui.param_check.append('Error in analysis. The Error message is:'\
                                              +'\n'+str(e)+'\n')
 
     def _factorial(self, n, k):
@@ -1023,6 +1054,8 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.ui.lineEdit_filename.setEnabled(bool)
         self.ui.pushButton_computefile.setEnabled(bool)
         self.ui.pushButton_openfile.setEnabled(bool)
+        self.ui.trigger2.setEnabled(~bool)
+        self.ui.trigger1.setEnabled(~bool)
 
     def fun_stop(self):
         """
@@ -1043,7 +1076,6 @@ class Mainprogram(QtWidgets.QMainWindow):
         self.fun_unlock()
         self.ui.param_check.append("Analysis stopped.\n")
 
-
     def _str2list(self, text):
         """
         convert an input string to a python list
@@ -1061,7 +1093,7 @@ class Mainprogram(QtWidgets.QMainWindow):
         return ind
 
 class Display(QtCore.QObject):
-    finished =QtCore.pyqtSignal()  # give worker class a finished signal
+    finished = QtCore.pyqtSignal()  # give worker class a finished signal
     progress = QtCore.pyqtSignal(list)
     error = QtCore.pyqtSignal(tuple)
     def __init__(self, que):
@@ -1080,7 +1112,7 @@ class Display(QtCore.QObject):
     def do_display(self):
         while self.continue_run:  # give the loop a stoppable condition
             try:
-                time.sleep(0.3)
+                # time.sleep(0.3)
                 self.progress.emit(self.que.get())
             except:
                 traceback.print_exc()
