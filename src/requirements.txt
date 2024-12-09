@@ -1,6 +1,6 @@
 astropy==4.0.1.post1
 mne==0.20.5
-numpy==1.18.5
+numpy==1.22.0
 osc4py3==1.0.8
 pylsl==1.12.2
 PyQt5==5.13.2
